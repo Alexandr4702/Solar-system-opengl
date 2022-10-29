@@ -24,7 +24,7 @@ set(PROJECT_SOURCES
         world.cpp
 )
 
-include_directories('.')
+include_directories('.' './eigen')
 
 set(RESOURCE_FILES
     resources/*
