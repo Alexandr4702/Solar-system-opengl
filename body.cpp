@@ -7,6 +7,39 @@ Body::Body()
     ImportModel("../resources/sphere.x3d");
 }
 
+Body::Body(Body&& body)
+{
+    scene = body.scene;
+    mass = body.mass;
+    J = body.J;
+    scale = body.scale;
+    postition = body.postition;
+    velocity = body.velocity;
+    acceleration = body.acceleration;
+    orientation = body.orientation;
+    angularVelocity = body.angularVelocity;
+    angularAcceleration = body.angularAcceleration;
+}
+
+Body::Body(const Body& body)
+{
+    std::scoped_lock guard(body.mtx);
+    scene = body.scene;
+    mass = body.mass;
+    J = body.J;
+    scale = body.scale;
+    postition = body.postition;
+    velocity = body.velocity;
+    acceleration = body.acceleration;
+    orientation = body.orientation;
+    angularVelocity = body.angularVelocity;
+    angularAcceleration = body.angularAcceleration;
+}
+
+Body::~Body()
+{
+}
+
 void Body::draw()
 {
 
@@ -14,7 +47,19 @@ void Body::draw()
 
 void Body::update()
 {
+    std::scoped_lock guard(mtx);
+}
 
+Eigen::Matrix4f Body::getBodyMatrix() const
+{
+    std::scoped_lock guard(mtx);
+    Eigen::Affine3f CamMatrix;
+    CamMatrix.setIdentity();
+    CamMatrix.scale(scale);
+    CamMatrix.rotate(orientation);
+    CamMatrix.translate(postition);
+
+    return CamMatrix.matrix();
 }
 
 bool Body::ImportModel(std::string pFile)

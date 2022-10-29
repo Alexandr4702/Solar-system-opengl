@@ -25,6 +25,12 @@ void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    shaderProgramm.bind();
+    for(auto body: world->bodies)
+    {
+        body.draw();
+
+    }
 
     update();
 }

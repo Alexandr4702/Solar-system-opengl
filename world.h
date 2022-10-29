@@ -3,6 +3,9 @@
 #include <vector>
 #include "body.h"
 
+/*
+@brief Class that contains bodies and performs the world evolution calculation.
+*/
 class World
 {
 public:

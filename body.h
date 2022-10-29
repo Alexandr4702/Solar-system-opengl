@@ -1,8 +1,5 @@
 #ifndef BODY_H
 #define BODY_H
-#include <QVector3D>
-#include <QQuaternion>
-#include <QMatrix3x3>
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -11,30 +8,45 @@
 #include <vector>
 #include <string>
 
+#include <mutex>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <eigen/Eigen/Core>
+#include <eigen/Eigen/Geometry>
+
+/*
+@brief Class contains information about body and his 3d model.
+*/
 class Body
 {
 public:
-    Body();
+     Body();
+     Body(Body&&);
+     Body(const Body&);
+     ~Body();
      void draw();
      void update();
+     Eigen::Matrix4f getBodyMatrix() const;
 private:
      bool ImportModel(std::string pFile);
      const aiScene* scene;
-public:
-     QMatrix3x3 J;
+private:
+     Eigen::Matrix3f J;
      double mass;
 
-     QVector3D postition;
-     QVector3D velocity;
-     QVector3D acceleration;
+     Eigen::Vector3f scale = {1, 1, 1};
 
-     QQuaternion orientation;
-     QVector3D angularVelocity;
-     QVector3D angularAcceleration;
+     Eigen::Vector3f postition = {0,0,0};
+     Eigen::Vector3f velocity = {0,0,0};
+     Eigen::Vector3f acceleration = {0,0,0};
+
+     Eigen::Quaternionf orientation = Eigen::Quaternionf::Identity();
+     Eigen::Vector3f angularVelocity = {0,0,0};
+     Eigen::Vector3f angularAcceleration = {0,0,0};
+     mutable std::mutex mtx;
 };
 
 #endif // BODY_H
