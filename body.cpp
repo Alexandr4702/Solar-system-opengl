@@ -53,13 +53,13 @@ void Body::update()
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
     std::scoped_lock guard(mtx);
-    Eigen::Affine3f CamMatrix;
-    CamMatrix.setIdentity();
-    CamMatrix.scale(scale);
-    CamMatrix.rotate(orientation);
-    CamMatrix.translate(postition);
+    Eigen::Affine3f bodyMatrix;
+    bodyMatrix.setIdentity();
+    bodyMatrix.scale(scale);
+    bodyMatrix.rotate(orientation);
+    bodyMatrix.translate(postition);
 
-    return CamMatrix.matrix();
+    return bodyMatrix.matrix();
 }
 
 bool Body::ImportModel(std::string pFile)
