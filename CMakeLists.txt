@@ -19,13 +19,15 @@ find_package(GLUT REQUIRED)
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
-        mainwindow.h
         glsimulation.cpp
-        glsimulation.h
         body.cpp
-        body.h
         world.cpp
-        world.h
+)
+
+include_directories('.')
+
+set(RESOURCE_FILES
+    resources/*
 )
 
 add_executable(Qt-opengl-phys-enige

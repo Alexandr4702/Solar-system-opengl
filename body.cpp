@@ -4,7 +4,7 @@
 
 Body::Body()
 {
-    ImportModel("../sphere.x3d");
+    ImportModel("../resources/sphere.x3d");
 }
 
 void Body::draw()
