@@ -17,6 +17,8 @@
 #include <eigen/Eigen/Core>
 #include <eigen/Eigen/Geometry>
 
+#include "camera.h"
+
 /*
 @brief Class contains information about body and his 3d model.
 */
@@ -27,12 +29,11 @@ public:
      Body(Body&&);
      Body(const Body&);
      ~Body();
-     void draw();
+     void draw(QOpenGLShaderProgram& program, Camera& cam);
      void update();
      Eigen::Matrix4f getBodyMatrix() const;
 private:
      bool ImportModel(std::string pFile);
-     const aiScene* scene;
 private:
      Eigen::Matrix3f J;
      double mass;
@@ -47,6 +48,13 @@ private:
      Eigen::Vector3f angularVelocity = {0,0,0};
      Eigen::Vector3f angularAcceleration = {0,0,0};
      mutable std::mutex mtx;
+
+     std::vector<Eigen::Vector3f> vertices;
+     std::vector<uint32_t> indices;
+     uint32_t numberOfFaces = 0;
+
+     QOpenGLBuffer arrayBuf;
+     QOpenGLBuffer indexBuf;
 };
 
 #endif // BODY_H

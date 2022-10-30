@@ -28,8 +28,8 @@ void GlSimulation::paintGL()
     shaderProgramm.bind();
     for(auto body: world->bodies)
     {
-        body.draw();
-
+        shaderProgramm.setUniformValue("mvp_matrix", QMatrix4x4(cam.getCameraProjectiveMatrix().data()));
+        body.draw(shaderProgramm, cam);
     }
 
     update();
