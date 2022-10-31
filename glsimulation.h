@@ -27,6 +27,7 @@ protected:
     void paintGL();
     void initShader();
 private:
+    // void drawCube();
     bool createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProgramm_, std::string vertesShader, std::string fragmentShader);
     std::shared_ptr <World> world;
     QOpenGLShaderProgram shaderProgramm;

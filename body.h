@@ -4,10 +4,12 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QGLContext>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
 
 #include <vector>
 #include <string>
-
+#include <memory>
 #include <mutex>
 
 #include <assimp/Importer.hpp>
@@ -22,19 +24,32 @@
 /*
 @brief Class contains information about body and his 3d model.
 */
-class Body
+class Body: public QOpenGLFunctions
 {
 public:
-     Body();
+     Body(QOpenGLContext*);
      Body(Body&&);
-     Body(const Body&);
+     Body(const Body&) = delete;
      ~Body();
-     void draw(QOpenGLShaderProgram& program, Camera& cam);
+     void draw(QOpenGLShaderProgram& program, Camera& cam, QOpenGLFunctions* f);
      void update();
      Eigen::Matrix4f getBodyMatrix() const;
 private:
      bool ImportModel(std::string pFile);
+
+struct VertexData
+{
+QVector3D position;
+QVector2D texCoord;
+};
+     bool ImportTestModel();
 private:
+     QOpenGLContext* ctx;
+/*
+@brief test func
+*/
+     void drawCube();
+
      Eigen::Matrix3f J;
      double mass;
 
@@ -53,8 +68,8 @@ private:
      std::vector<uint32_t> indices;
      uint32_t numberOfFaces = 0;
 
-     QOpenGLBuffer arrayBuf;
-     QOpenGLBuffer indexBuf;
+     std::unique_ptr<QOpenGLBuffer> arrayBuf;
+     std::unique_ptr<QOpenGLBuffer> indexBuf;
 };
 
 #endif // BODY_H

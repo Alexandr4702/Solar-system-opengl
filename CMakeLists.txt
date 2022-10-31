@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         glsimulation.cpp
         body.cpp
         world.cpp
+        camera.cpp
 )
 
 include_directories('.' './eigen')

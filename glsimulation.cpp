@@ -16,20 +16,31 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
+    world->bodies.push_back(Body(this->context()));
     createShaderProgramFromFiles(shaderProgramm, "../resources/vertex_shader.vert", "../resources/fragment_shader.frag");
 
+    glClearDepth(1.f);
+    glClearColor(0.3f, 0.3f, 0.3f, 0.f);
     glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
 }
 
 void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    static double test = 0;
+    test += 0.01;
+    cam.setTranslationCam({0, 0, 100 * sin(test)});
     shaderProgramm.bind();
-    for(auto body: world->bodies)
+    auto mvp = cam.getCameraProjectiveMatrix();
+    // mvp[0][0];
+    QMatrix4x4 matrix(mvp.data());
+    shaderProgramm.setUniformValue("mvp_matrix", matrix);
+
+    for(auto& body: world->bodies)
     {
-        shaderProgramm.setUniformValue("mvp_matrix", QMatrix4x4(cam.getCameraProjectiveMatrix().data()));
-        body.draw(shaderProgramm, cam);
+        body.draw(shaderProgramm, cam, this);
     }
 
     update();
