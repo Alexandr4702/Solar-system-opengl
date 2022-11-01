@@ -31,7 +31,7 @@ public:
      Body(Body&&);
      Body(const Body&) = delete;
      ~Body();
-     void draw(QOpenGLShaderProgram& program, Camera& cam, QOpenGLFunctions* f);
+     void draw(QOpenGLShaderProgram& program, Camera& cam);
      void update();
      Eigen::Matrix4f getBodyMatrix() const;
 private:

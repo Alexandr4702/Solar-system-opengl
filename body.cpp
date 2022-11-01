@@ -83,10 +83,10 @@ Body::Body(QOpenGLContext* context): QOpenGLFunctions(context), ctx(context),
 indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
 arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
 {
-    // ImportModel("../resources/sphere.x3d");
     arrayBuf->create();
     indexBuf->create();
 
+    // ImportModel("../resources/sphere.x3d");
     ImportTestModel();
 }
 
@@ -125,7 +125,7 @@ Body::~Body()
     }
 }
 
-void Body::draw(QOpenGLShaderProgram& program, Camera& cam, QOpenGLFunctions* f)
+void Body::draw(QOpenGLShaderProgram& program, Camera& cam)
 {
     // Tell OpenGL which VBOs to use
     // arrayBuf.bind();

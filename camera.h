@@ -34,8 +34,8 @@ class Camera
     static Eigen::Matrix4f projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
 
     private:
-    Eigen::Vector3f translation{0, 0, 1};
-    Eigen::Quaternionf rotation = Eigen::Quaternionf(0, 0, 1, 0);
+    Eigen::Vector3f translation{0, 0, 0};
+    Eigen::Quaternionf rotation = Eigen::Quaternionf(1, 0, 0, 0);
     Eigen::Vector3f       scale {1.0f, 1.0f, 1.0f};
     Eigen::Matrix4f projectiveMatrix = projective_matrix(60.f, 1.f, 1.f, 100.0f);
     mutable std::mutex mtx;
