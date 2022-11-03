@@ -18,7 +18,7 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    world->bodies.push_back(Body(this->context()));
+    world->bodies.emplace_back(this->context());
     createShaderProgramFromFiles(shaderProgramm, "../resources/vertex_shader.vert", "../resources/fragment_shader.frag");
 
     glClearDepth(1.f);
@@ -37,9 +37,7 @@ void GlSimulation::paintGL()
     QMatrix4x4 matrix(mvp.data());
     shaderProgramm.setUniformValue("mvp_matrix", matrix);
 
-    qDebug() << matrix;
-
-    for(auto&& body: world->bodies)
+    for(auto& body: world->bodies)
     {
         body.draw(shaderProgramm, cam);
     }
@@ -115,13 +113,24 @@ void GlSimulation::mouseMoveEvent(QMouseEvent *event)
     int key = event->buttons();
     if((key & Qt::RightButton)  == Qt::RightButton)
     {
-        std::cout << "mouse Pressed " << event->pos().x() << "\n";
+        Eigen::Vector2f vec(event->pos().x(), event->pos().y());
+        // vec.normalize();
+        cam.rotateCam(vec);
+        std::cout << "mouse Pressed " << vec.x() << "\n";
     }
 }
 
 void GlSimulation::mousePressEvent(QMouseEvent *event)
 {
 
+    int key = event->buttons();
+    if((key & Qt::RightButton)  == Qt::RightButton)
+    {
+        Eigen::Vector2f vec = Eigen::Vector2f(event->pos().x(), event->pos().y());
+        // vec.normalize();
+        cam.StartRotation(vec);
+        std::cout << "mouse Pressed " << vec.x() << "\n";
+    }
 }
 
 void GlSimulation::mouseReleaseEvent(QMouseEvent *event)

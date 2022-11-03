@@ -47,7 +47,7 @@ arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
     arrayBuf->create();
     indexBuf->create();
 
-    // ImportModel("../resources/sphere.x3d");
+    // ImportModel("../resources/Sphere1.x3d");
     ImportTestModel();
 }
 
