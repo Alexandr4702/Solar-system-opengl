@@ -31,16 +31,15 @@ void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // static double test = 0;
-    // test += 0.01;
-    // cam.setTranslationCam({0, 0, 100 * sin(test)});
     shaderProgramm.bind();
-    auto mvp = cam.getCameraProjectiveMatrix();
+    Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix().transpose();
     // mvp[0][0];
     QMatrix4x4 matrix(mvp.data());
     shaderProgramm.setUniformValue("mvp_matrix", matrix);
 
-    for(auto& body: world->bodies)
+    qDebug() << matrix;
+
+    for(auto&& body: world->bodies)
     {
         body.draw(shaderProgramm, cam);
     }
@@ -56,30 +55,31 @@ void GlSimulation::keyPressEvent(QKeyEvent *event)
         case Qt::Key_W:
         {
             static int cnt = 0;
-            cam.TranslateCam(Eigen::Vector3f(0, 0, 0.02));
-            std::cout << "Key pressed " << cnt++ << "\n";
+            cam.TranslateCam(Eigen::Vector3f(0, 0, 0.05));
         }break;
         case Qt::Key_S:
         {
-            cam.TranslateCam(Eigen::Vector3f(0, 0, -0.02));
+            cam.TranslateCam(Eigen::Vector3f(0, 0, -0.05));
         }break;
         case Qt::Key_A:
         {
-            cam.TranslateCam(Eigen::Vector3f(0.01, 0, 0));
+            cam.TranslateCam(Eigen::Vector3f(0.05, 0, 0));
         }break;
         case Qt::Key_D:
         {
-            cam.TranslateCam(Eigen::Vector3f(-0.01, 0, 0));
+            cam.TranslateCam(Eigen::Vector3f(-0.05, 0, 0));
         }break;
         case Qt::Key_Shift:
         {
-            cam.TranslateCam(Eigen::Vector3f(0, 0.01, 0));
+            cam.TranslateCam(Eigen::Vector3f(0, 0.05, 0));
         }break;
         case Qt::Key_Space:
         {
-           cam.TranslateCam(Eigen::Vector3f(0, -0.01, 0));
+           cam.TranslateCam(Eigen::Vector3f(0, -0.05, 0));
         }break;
     }
+    std::cout << "Key pressed " << cam.getTranslation().transpose() << "\n";
+    std::cout << "Matrix \n" << cam.getCameraProjectiveMatrix() << "\n";
 }
 
 void GlSimulation::keyReleaseEvent(QKeyEvent *event)
