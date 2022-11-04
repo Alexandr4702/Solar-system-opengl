@@ -29,6 +29,7 @@ protected:
     void initializeGL();
     void resizeGL(int width, int height);
     void paintGL();
+    void paintThreadfoo();
     void initShader();
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
@@ -42,7 +43,8 @@ private:
     QOpenGLShaderProgram shaderProgramm;
     std::shared_ptr<World> world;
     Camera cam;
-    std::thread paintThread;
+    std::thread paintThreadHandle;
+    bool isPaintThreadRun = true;
     std::unordered_map<int, bool> PressedKey;
 };
 

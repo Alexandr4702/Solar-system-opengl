@@ -11,7 +11,8 @@ GlSimulation::GlSimulation(QWidget *parent): QOpenGLWidget(parent)
 
 GlSimulation::~GlSimulation()
 {
-
+    isPaintThreadRun = false;
+    paintThreadHandle.join();
 }
 
 void GlSimulation::initializeGL()
@@ -31,6 +32,8 @@ void GlSimulation::initializeGL()
     glClearColor(0.3f, 0.3f, 0.3f, 0.f);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
+
+    paintThreadHandle = std::thread(&GlSimulation::paintThreadfoo, this);
 }
 
 void GlSimulation::paintGL()
@@ -49,8 +52,17 @@ void GlSimulation::paintGL()
     {
         body.draw(shaderProgramm, mvp);
     }
+}
 
-    update();
+void GlSimulation::paintThreadfoo()
+{
+    using namespace std::literals::chrono_literals;
+
+    while(isPaintThreadRun)
+    {
+        update();
+        std::this_thread::sleep_for(15ms);
+    }
 }
 
 void GlSimulation::keyPressEvent(QKeyEvent *event)
@@ -94,8 +106,8 @@ void GlSimulation::keyPressEvent(QKeyEvent *event)
             cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
         }break;
     }
-    std::cout << "Key pressed " << cam.getTranslation().transpose() << "\n";
-    std::cout << "Matrix \n" << cam.getCameraProjectiveMatrix() << "\n";
+    // std::cout << "Key pressed " << cam.getTranslation().transpose() << "\n";
+    // std::cout << "Matrix \n" << cam.getCameraProjectiveMatrix() << "\n";
 }
 
 void GlSimulation::keyReleaseEvent(QKeyEvent *event)
@@ -105,7 +117,7 @@ void GlSimulation::keyReleaseEvent(QKeyEvent *event)
     {
         case Qt::Key_W:
         {
-            std::cout << "Key Released \n";
+            // std::cout << "Key Released \n";
         }break;
         case Qt::Key_S:
         {
@@ -121,7 +133,7 @@ void GlSimulation::keyReleaseEvent(QKeyEvent *event)
         }break;
         case Qt::Key_Space:
         {
-            std::cout << "W released \n";
+            // std::cout << "W released \n";
         }break;
     }
 }
@@ -134,7 +146,6 @@ void GlSimulation::mouseMoveEvent(QMouseEvent *event)
         Eigen::Vector2f vec(event->pos().x(), event->pos().y());
         // vec.normalize();
         cam.rotateCam(vec);
-        std::cout << "mouse Pressed " << vec.x() << "\n";
     }
 }
 
@@ -145,9 +156,7 @@ void GlSimulation::mousePressEvent(QMouseEvent *event)
     if((key & Qt::RightButton)  == Qt::RightButton)
     {
         Eigen::Vector2f vec = Eigen::Vector2f(event->pos().x(), event->pos().y());
-        // vec.normalize();
         cam.StartRotation(vec);
-        std::cout << "mouse Pressed " << vec.x() << "\n";
     }
 }
 
