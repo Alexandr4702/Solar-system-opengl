@@ -51,6 +51,16 @@ arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
     // ImportTestModel();
 }
 
+Body::Body(QOpenGLContext* context, std::string filename): QOpenGLFunctions(context), ctx(context),
+indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
+arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+{
+    arrayBuf->create();
+    indexBuf->create();
+
+    ImportModel(filename);
+}
+
 Body::Body(Body&& body): QOpenGLFunctions(body.ctx)
 {
     using namespace std;
@@ -88,36 +98,27 @@ Body::~Body()
 
 void Body::draw(QOpenGLShaderProgram& program)
 {
-    // drawCube(f);
-    // drawCube();
-
-    // drawCube();
-    // return;
-
-    // Tell OpenGL which VBOs to use
     arrayBuf->bind();
     indexBuf->bind();
 
-    // Offset for position
-    quintptr offset = 0;
-
-    // Tell OpenGL programmable pipeline how to locate vertex position data
     int vertexLocation = program.attributeLocation("a_position");
     vertexLocation = 0;
     program.enableAttributeArray(vertexLocation);
-    program.setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(vertices[0]));
+    program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(vertices[0]));
 
-    // Offset for texture coordinate
-    // offset += sizeof(QVector3D);
-
-    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
-    // int texcoordLocation = program.attributeLocation("a_texcoord");
-    // program.enableAttributeArray(texcoordLocation);
-    // program.setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(vertices[0]));
-
-    // Draw cube geometry using indices from VBO 1
     glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, nullptr);
-    // glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+}
+
+void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam)
+{
+    // mvp[0][0];
+
+    Eigen::Matrix4f mvpMat = (matrixCam * getBodyMatrix()).transpose();
+
+    QMatrix4x4 matrix(mvpMat.data());
+    program.setUniformValue("mvp_matrix", matrix);
+
+    draw(program);
 }
 
 void Body::update()
@@ -125,14 +126,38 @@ void Body::update()
     std::scoped_lock guard(mtx);
 }
 
+void Body::setBodyPosition(Eigen::Vector3f& pos)
+{
+    std::scoped_lock guard(mtx);
+    postition = pos;
+}
+
+void Body::translateBody(Eigen::Vector3f& translation)
+{
+    std::scoped_lock guard(mtx);
+    postition += translation;
+}
+
+void Body::setBodyRotation(Eigen::Quaternionf& q)
+{
+    std::scoped_lock guard(mtx);
+    orientation = q;
+}
+
+void Body::rotateBody(Eigen::Quaternionf& q)
+{
+    std::scoped_lock guard(mtx);
+    orientation = q * orientation;
+}
+
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
     std::scoped_lock guard(mtx);
     Eigen::Affine3f bodyMatrix;
     bodyMatrix.setIdentity();
-    bodyMatrix.scale(scale);
-    bodyMatrix.rotate(orientation);
     bodyMatrix.translate(postition);
+    bodyMatrix.rotate(orientation);
+    bodyMatrix.scale(scale);
 
     return bodyMatrix.matrix();
 }
@@ -153,9 +178,6 @@ bool Body::ImportModel(std::string pFile)
         std::cerr << importer.GetErrorString() << "\n";
         return false;
     }
-    std::cout << "num vertices: " << scene_->mName.C_Str() << "\n";
-    std::cout << "num vertices: " << scene_->mMeshes[0]->mNumVertices << "\n";
-    std::cout << "num indeces: " <<  scene_->mMeshes[0]->mNumFaces << "\n";
 
     for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumVertices;i++)
     {
@@ -164,7 +186,6 @@ bool Body::ImportModel(std::string pFile)
             scene_->mMeshes[0]->mVertices[i].y,
             scene_->mMeshes[0]->mVertices[i].z
         );
-        std::cout << vec.transpose() << " " << scene_->mMeshes[0]->mVertices[i].x << "\n";
         vertices.push_back( vec);
     }
 
@@ -177,11 +198,6 @@ bool Body::ImportModel(std::string pFile)
             indices.push_back(scene_->mMeshes[0]->mFaces[i].mIndices[j]);
         }
     }
-
-    std::cout << vertices.size() << " indeces size: " << indices.size() << "\n";
-
-    // for(auto&& index: indices)
-    //     std::cout << vertices[index].transpose() << "\n";
 
     arrayBuf->bind();
     arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));

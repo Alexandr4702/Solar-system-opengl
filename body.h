@@ -28,12 +28,20 @@ class Body: public QOpenGLFunctions
 {
 public:
      Body(QOpenGLContext*);
+     Body(QOpenGLContext*, std::string filename);
      Body(Body&&);
      Body(const Body&) = delete;//TODO
      ~Body();
      void draw(QOpenGLShaderProgram& program);
      void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam);
      void update();
+
+     void setBodyPosition(Eigen::Vector3f&);
+     void translateBody(Eigen::Vector3f&);
+
+     void setBodyRotation(Eigen::Quaternionf& q);
+     void rotateBody(Eigen::Quaternionf& q);
+
      Eigen::Matrix4f getBodyMatrix() const;
 private:
      bool ImportModel(std::string pFile);
@@ -69,8 +77,8 @@ private:
      std::vector<uint32_t> indices;
      uint32_t numberOfFaces = 0;
 
-     std::unique_ptr<QOpenGLBuffer> arrayBuf;
-     std::unique_ptr<QOpenGLBuffer> indexBuf;
+     std::shared_ptr<QOpenGLBuffer> arrayBuf;
+     std::shared_ptr<QOpenGLBuffer> indexBuf;
 };
 
 #endif // BODY_H

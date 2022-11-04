@@ -18,7 +18,13 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    world->bodies.emplace_back(this->context());
+    world->bodies.emplace_back(this->context(), "../resources/Sphere.stl");
+
+    world->bodies.emplace_back(this->context(), "../resources/Cube.stl");
+
+    Eigen::Vector3f transl(2, 0, 0);
+    world->bodies[1].translateBody(transl);
+
     createShaderProgramFromFiles(shaderProgramm, "../resources/vertex_shader.vert", "../resources/fragment_shader.frag");
 
     glClearDepth(1.f);
@@ -32,14 +38,16 @@ void GlSimulation::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shaderProgramm.bind();
-    Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix().transpose();
-    // mvp[0][0];
-    QMatrix4x4 matrix(mvp.data());
-    shaderProgramm.setUniformValue("mvp_matrix", matrix);
+
+    float angle = 0.5 * M_PI / 180.0f;
+    Eigen::Quaternionf q(cos(angle / 2), 0, 0, sin(angle / 2));
+    world->bodies[1].rotateBody(q);
+
+    Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix();
 
     for(auto& body: world->bodies)
     {
-        body.draw(shaderProgramm);
+        body.draw(shaderProgramm, mvp);
     }
 
     update();
@@ -74,6 +82,16 @@ void GlSimulation::keyPressEvent(QKeyEvent *event)
         case Qt::Key_Space:
         {
            cam.TranslateCam(Eigen::Vector3f(0, -0.05, 0));
+        }break;
+        case Qt::Key_Q:
+        {
+            float angle = 0.5 * M_PI / 180.0f;
+            cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
+        }break;
+        case Qt::Key_E:
+        {
+            float angle = -0.5 * M_PI / 180.0f;
+            cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
         }break;
     }
     std::cout << "Key pressed " << cam.getTranslation().transpose() << "\n";
