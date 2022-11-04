@@ -29,9 +29,10 @@ class Body: public QOpenGLFunctions
 public:
      Body(QOpenGLContext*);
      Body(Body&&);
-     Body(const Body&) = delete;
+     Body(const Body&) = delete;//TODO
      ~Body();
-     void draw(QOpenGLShaderProgram& program, Camera& cam);
+     void draw(QOpenGLShaderProgram& program);
+     void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam);
      void update();
      Eigen::Matrix4f getBodyMatrix() const;
 private:

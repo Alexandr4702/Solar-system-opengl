@@ -47,8 +47,8 @@ arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
     arrayBuf->create();
     indexBuf->create();
 
-    // ImportModel("../resources/Sphere1.x3d");
-    ImportTestModel();
+    ImportModel("../resources/Sphere.stl");
+    // ImportTestModel();
 }
 
 Body::Body(Body&& body): QOpenGLFunctions(body.ctx)
@@ -86,7 +86,7 @@ Body::~Body()
     }
 }
 
-void Body::draw(QOpenGLShaderProgram& program, Camera& cam)
+void Body::draw(QOpenGLShaderProgram& program)
 {
     // drawCube(f);
     // drawCube();
@@ -117,6 +117,7 @@ void Body::draw(QOpenGLShaderProgram& program, Camera& cam)
 
     // Draw cube geometry using indices from VBO 1
     glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, nullptr);
+    // glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 }
 
 void Body::update()
@@ -140,25 +141,31 @@ bool Body::ImportModel(std::string pFile)
 {
     Assimp::Importer importer;
 
-    aiScene* scene_ = const_cast<aiScene*>(importer.ReadFile( pFile,
+    const aiScene* scene_ = importer.ReadFile( pFile,
                                 aiProcess_CalcTangentSpace       |
                                 aiProcess_Triangulate            |
                                 aiProcess_JoinIdenticalVertices  |
-                                aiProcess_SortByPType));
+                                aiProcess_SortByPType
+                                );
 
     if( !scene_)
     {
         std::cerr << importer.GetErrorString() << "\n";
         return false;
     }
+    std::cout << "num vertices: " << scene_->mName.C_Str() << "\n";
+    std::cout << "num vertices: " << scene_->mMeshes[0]->mNumVertices << "\n";
+    std::cout << "num indeces: " <<  scene_->mMeshes[0]->mNumFaces << "\n";
 
     for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumVertices;i++)
     {
-        vertices.push_back( Eigen::Vector3f(
+        Eigen::Vector3f vec = Eigen::Vector3f(
             scene_->mMeshes[0]->mVertices[i].x,
             scene_->mMeshes[0]->mVertices[i].y,
             scene_->mMeshes[0]->mVertices[i].z
-        ));
+        );
+        std::cout << vec.transpose() << " " << scene_->mMeshes[0]->mVertices[i].x << "\n";
+        vertices.push_back( vec);
     }
 
     numberOfFaces = scene_->mMeshes[0]->mNumFaces;
@@ -170,6 +177,11 @@ bool Body::ImportModel(std::string pFile)
             indices.push_back(scene_->mMeshes[0]->mFaces[i].mIndices[j]);
         }
     }
+
+    std::cout << vertices.size() << " indeces size: " << indices.size() << "\n";
+
+    // for(auto&& index: indices)
+    //     std::cout << vertices[index].transpose() << "\n";
 
     arrayBuf->bind();
     arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));

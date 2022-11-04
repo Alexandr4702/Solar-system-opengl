@@ -39,7 +39,7 @@ void GlSimulation::paintGL()
 
     for(auto& body: world->bodies)
     {
-        body.draw(shaderProgramm, cam);
+        body.draw(shaderProgramm);
     }
 
     update();
