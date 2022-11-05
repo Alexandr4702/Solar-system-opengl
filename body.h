@@ -46,12 +46,11 @@ public:
 private:
      bool ImportModel(std::string pFile);
 
-     struct VertexData
-     {
-          Eigen::Vector3f position;
-          Eigen::Vector2f texCoord;
-          Eigen::Vector3f normals;
-     };
+struct VertexData
+{
+QVector3D position;
+QVector2D texCoord;
+};
      bool ImportTestModel();
 private:
      QOpenGLContext* ctx;
@@ -74,7 +73,7 @@ private:
      Eigen::Vector3f angularAcceleration = {0,0,0};
      mutable std::mutex mtx;
 
-     std::vector<VertexData> vertices;
+     std::vector<Eigen::Vector3f> vertices;
      std::vector<uint32_t> indices;
      uint32_t numberOfFaces = 0;
 

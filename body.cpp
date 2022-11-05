@@ -106,7 +106,7 @@ void Body::draw(QOpenGLShaderProgram& program)
     program.enableAttributeArray(vertexLocation);
     program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(vertices[0]));
 
-    glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 }
 
 void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam)
@@ -167,13 +167,10 @@ bool Body::ImportModel(std::string pFile)
     Assimp::Importer importer;
 
     const aiScene* scene_ = importer.ReadFile( pFile,
-                                  aiProcess_CalcTangentSpace
-                                | aiProcess_Triangulate
-                                | aiProcess_JoinIdenticalVertices
-                                | aiProcess_SortByPType
-                                | aiProcess_GenSmoothNormals
-                                | aiProcess_OptimizeMeshes
-                                | aiProcess_OptimizeGraph
+                                aiProcess_CalcTangentSpace       |
+                                aiProcess_Triangulate            |
+                                aiProcess_JoinIdenticalVertices  |
+                                aiProcess_SortByPType
                                 );
 
     if( !scene_)
@@ -182,32 +179,18 @@ bool Body::ImportModel(std::string pFile)
         return false;
     }
 
-    if(scene_->HasMeshes())
+    for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumVertices;i++)
     {
-        for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumVertices;i++)
-        {
-            Eigen::Vector3f vec = Eigen::Vector3f(
-                scene_->mMeshes[0]->mVertices[i].x,
-                scene_->mMeshes[0]->mVertices[i].y,
-                scene_->mMeshes[0]->mVertices[i].z
-            );
-            vertices.push_back( vec);
-        }
-    }
-
-    if(scene_->HasMaterials())
-    {
-        scene_->mNumMaterials;
-    }
-
-    if(scene_->HasTextures())
-    {
-        const aiTexture* texture = scene_->GetEmbeddedTexture(pFile.c_str());
-        std::cerr << importer.GetErrorString() << "\n";
-        return false;
+        Eigen::Vector3f vec = Eigen::Vector3f(
+            scene_->mMeshes[0]->mVertices[i].x,
+            scene_->mMeshes[0]->mVertices[i].y,
+            scene_->mMeshes[0]->mVertices[i].z
+        );
+        vertices.push_back( vec);
     }
 
     numberOfFaces = scene_->mMeshes[0]->mNumFaces;
+
     for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumFaces;i++)
     {
         for(uint32_t j = 0; j < scene_->mMeshes[0]->mFaces[i].mNumIndices; j++)
@@ -227,37 +210,37 @@ bool Body::ImportModel(std::string pFile)
 
 bool Body::ImportTestModel()
 {
-    // std::vector <VertexData> cubeVertices = {
-    //     {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.0f, 0.0f)},
-    //     {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.0f)},
-    //     {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.0f, 0.5f)},
-    //     {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)},
+    std::vector <VertexData> cubeVertices = {
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.0f, 0.0f)},
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.0f)},
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.0f, 0.5f)},
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)},
 
-    //     {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D( 0.0f, 0.5f)},
-    //     {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.5f)},
-    //     {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.0f, 1.0f)},
-    //     {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)},
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D( 0.0f, 0.5f)},
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.5f)},
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.0f, 1.0f)},
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)},
 
-    //     {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.5f)},
-    //     {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(1.0f, 0.5f)},
-    //     {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)},
-    //     {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(1.0f, 1.0f)},
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.5f)},
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(1.0f, 0.5f)},
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)},
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(1.0f, 1.0f)},
 
-    //     {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)},
-    //     {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(1.0f, 0.0f)},
-    //     {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.66f, 0.5f)},
-    //     {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(1.0f, 0.5f)},
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)},
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(1.0f, 0.0f)},
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.66f, 0.5f)},
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(1.0f, 0.5f)},
 
-    //     {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.0f)},
-    //     {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)},
-    //     {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.5f)},
-    //     {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.66f, 0.5f)},
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.0f)},
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)},
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.5f)},
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.66f, 0.5f)},
 
-    //     {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)},
-    //     {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.66f, 0.5f)},
-    //     {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)},
-    //     {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)}
-    // };
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)},
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.66f, 0.5f)},
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)},
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)}
+    };
 
     std::vector<GLushort> cubeIndices = {
          0,  1,  2,  3,  3,
@@ -270,7 +253,7 @@ bool Body::ImportTestModel()
 
     for (auto&& vertex: cubeVertices)
     {
-        // vertices.push_back({vertex.position.x(), vertex.position.y(), vertex.position.z()},);
+        vertices.push_back({vertex.position.x(), vertex.position.y(), vertex.position.z()});
     }
 
     for (auto&& index: cubeIndices)
