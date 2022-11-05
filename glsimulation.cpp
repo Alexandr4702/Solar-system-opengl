@@ -19,7 +19,7 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    world->bodies.emplace_back(this->context(), "../resources/Sphere.stl");
+    world->bodies.emplace_back(this->context(), "../resources/models/earth.obj");
 
     world->bodies.emplace_back(this->context(), "../resources/Cube.stl");
 
@@ -161,11 +161,6 @@ void GlSimulation::mousePressEvent(QMouseEvent *event)
 }
 
 void GlSimulation::mouseReleaseEvent(QMouseEvent *event)
-{
-
-}
-
-void GlSimulation::drawThread()
 {
 
 }

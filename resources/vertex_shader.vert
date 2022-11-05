@@ -12,5 +12,6 @@ void main()
 {
     gl_Position = mvp_matrix * vec4(position, 1.0);
     // gl_Position = mvp_matrix * a_position;
-    color = vec4( 0, 0, 1.0, 1.0);//vec4(clamp(gl_Position[0],0.1,1.0),clamp(gl_Position[1],0.1,1.0),clamp(gl_Position[2],0.1,1.0),1);
+    color = vec4(position, 1.0);
+    // color = vec4( 0, 0, 1.0, 1.0);//vec4(clamp(gl_Position[0],0.1,1.0),clamp(gl_Position[1],0.1,1.0),clamp(gl_Position[2],0.1,1.0),1);
 }
