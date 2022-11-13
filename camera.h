@@ -18,6 +18,7 @@
 class Camera
 {
     public:
+    void setAspectRatio(float ratio);
     void setProjetionMatrix(Eigen::Matrix4f mat);
     void setProjetionMatrix(float fovY, float aspectRatio, float zNear, float zFar);
     Eigen::Vector3f getTranslation() const;

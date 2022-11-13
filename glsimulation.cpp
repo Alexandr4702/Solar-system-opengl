@@ -203,5 +203,6 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
 
 void GlSimulation::resizeGL(int width, int height)
 {
+    cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
     glViewport(0, 0, GLint(width), GLint(height));
 }

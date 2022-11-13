@@ -138,3 +138,8 @@ void Camera::rotateCam(Eigen::Vector2f& mouseCoord)
         return;
     rotation = q;
 }
+void Camera::setAspectRatio(float ratio)
+{
+    std::scoped_lock guard(mtx);
+    projectiveMatrix = projective_matrix(60.f, ratio, 1.f, 100.0f);
+}
