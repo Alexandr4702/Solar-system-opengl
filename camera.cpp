@@ -113,26 +113,13 @@ void Camera::StartRotation(Eigen::Vector2f& mouseCoord)
 void Camera::rotateCam(Eigen::Vector2f& mouseCoord)
 {
     std::scoped_lock guard(mtx);
-
-    // float x_rot = (mouseCoord.x() - mouseCoord0.x());
-    // float y_rot = (mouseCoord.y() - mouseCoord0.y());
-
     Eigen::Vector2f diff = mouseCoord - mouseCoord0;
 
-    // diff /= 10000.0f;
-    // diff.normalize();
     diff *= 0.001;
 
     float w_rot = sqrt(1- diff.x()*diff.x() - diff.y()*diff.y());
     Eigen::Quaternionf q (w_rot, diff.y(), diff.x(), 0);
     q = q * q0;
-    // q.normalize();
-
-    std::cout << diff.transpose() << "\n";
-    std::cout << mouseCoord0.transpose() << "\n";
-    std::cout << mouseCoord.transpose() << "\n";
-    std::cout << w_rot << "\n";
-    std::cout << q.coeffs().transpose() << "\n";
 
     if(q.coeffs().hasNaN())
         return;

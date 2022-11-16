@@ -6,11 +6,15 @@
 #include <QGLContext>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
+#include <QOpenGLTexture>
+#include <QImage>
 
 #include <vector>
 #include <string>
 #include <memory>
 #include <mutex>
+#include <cstddef>
+#include <filesystem>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -48,8 +52,9 @@ private:
 
 struct VertexData
 {
-QVector3D position;
-QVector2D texCoord;
+Eigen::Vector3f position;
+Eigen::Vector2f texCoord;
+Eigen::Vector3f normal;
 };
      bool ImportTestModel();
 private:
@@ -73,12 +78,14 @@ private:
      Eigen::Vector3f angularAcceleration = {0,0,0};
      mutable std::mutex mtx;
 
-     std::vector<Eigen::Vector3f> vertices;
+     std::vector<VertexData> vertices;
      std::vector<uint32_t> indices;
      uint32_t numberOfFaces = 0;
 
      std::shared_ptr<QOpenGLBuffer> arrayBuf;
      std::shared_ptr<QOpenGLBuffer> indexBuf;
+
+     std::shared_ptr<QOpenGLTexture> texture = nullptr;
 };
 
 #endif // BODY_H
