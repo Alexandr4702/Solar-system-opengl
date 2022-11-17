@@ -28,40 +28,45 @@
 /*
 @brief Class contains information about body and his 3d model.
 */
-class Body: public QOpenGLFunctions
+class Body : public QOpenGLFunctions
 {
 public:
-     Body(QOpenGLContext*);
-     Body(QOpenGLContext*, std::string filename);
-     Body(Body&&);
-     Body(const Body&) = delete;//TODO
+     Body(QOpenGLContext *);
+     Body(QOpenGLContext *, std::string filename);
+     Body(Body &&);
+     Body(const Body &) = delete; // TODO
      ~Body();
-     void draw(QOpenGLShaderProgram& program);
-     void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam);
+     void draw(QOpenGLShaderProgram &program);
+     void draw(QOpenGLShaderProgram &program, Eigen::Matrix4f &matrixCam);
      void update();
 
-     void setBodyPosition(Eigen::Vector3f&);
-     void translateBody(Eigen::Vector3f&);
+     void setBodyPosition(Eigen::Vector3f &);
+     void translateBody(Eigen::Vector3f &);
 
-     void setBodyRotation(Eigen::Quaternionf& q);
-     void rotateBody(Eigen::Quaternionf& q);
+     void setBodyRotation(Eigen::Quaternionf &q);
+     void rotateBody(Eigen::Quaternionf &q);
+
+     void setBodyScale(Eigen::Vector3f &scale);
+     void setBodyScale(Eigen::Vector3f &&scale);
 
      Eigen::Matrix4f getBodyMatrix() const;
+
 private:
      bool ImportModel(std::string pFile);
 
-struct VertexData
-{
-Eigen::Vector3f position;
-Eigen::Vector2f texCoord;
-Eigen::Vector3f normal;
-};
+     struct VertexData
+     {
+          Eigen::Vector3f position;
+          Eigen::Vector2f texCoord;
+          Eigen::Vector3f normal;
+     };
      bool ImportTestModel();
+
 private:
-     QOpenGLContext* ctx;
-/*
-@brief test func
-*/
+     QOpenGLContext *ctx;
+     /*
+     @brief test func
+     */
      void drawCube();
 
      Eigen::Matrix3f J;
@@ -69,13 +74,13 @@ private:
 
      Eigen::Vector3f scale = {1, 1, 1};
 
-     Eigen::Vector3f postition = {0,0,0};
-     Eigen::Vector3f velocity = {0,0,0};
-     Eigen::Vector3f acceleration = {0,0,0};
+     Eigen::Vector3f postition = {0, 0, 0};
+     Eigen::Vector3f velocity = {0, 0, 0};
+     Eigen::Vector3f acceleration = {0, 0, 0};
 
      Eigen::Quaternionf orientation = Eigen::Quaternionf::Identity();
-     Eigen::Vector3f angularVelocity = {0,0,0};
-     Eigen::Vector3f angularAcceleration = {0,0,0};
+     Eigen::Vector3f angularVelocity = {0, 0, 0};
+     Eigen::Vector3f angularAcceleration = {0, 0, 0};
      mutable std::mutex mtx;
 
      std::vector<VertexData> vertices;

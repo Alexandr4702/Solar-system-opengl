@@ -30,12 +30,14 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    world->bodies.emplace_back(this->context(), "../resources/models/earth.obj");
+    // world->bodies.emplace_back(this->context(), "../resources/models/earth.obj");
+    world->bodies.emplace_back(this->context(), "../resources/models/CubSat3UVR.obj");
+    world->bodies[0].setBodyScale({0.01, 0.01, 0.01});
 
-    world->bodies.emplace_back(this->context(), "../resources/Cube.stl");
+    // world->bodies.emplace_back(this->context(), "../resources/Cube.stl");
 
-    Eigen::Vector3f transl(2, 0, 0);
-    world->bodies[1].translateBody(transl);
+    // Eigen::Vector3f transl(2, 0, 0);
+    // world->bodies[1].translateBody(transl);
 
     createShaderProgramFromFiles(shaderProgramm, "../resources/vertex_shader.vert", "../resources/fragment_shader.frag");
 
@@ -52,10 +54,6 @@ void GlSimulation::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shaderProgramm.bind();
-
-    float angle = 0.5 * M_PI / 180.0f;
-    Eigen::Quaternionf q(cos(angle / 2), 0, 0, sin(angle / 2));
-    world->bodies[1].rotateBody(q);
 
     Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix();
 
@@ -109,6 +107,10 @@ void GlSimulation::paintThreadfoo()
                 cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
         }
+        // float angle = 0.5 * M_PI / 180.0f;
+        // Eigen::Quaternionf q(cos(angle / 2), 0, 0, sin(angle / 2));
+        // world->bodies[1].rotateBody(q);
+
         update();
         std::this_thread::sleep_for(15ms);
     }

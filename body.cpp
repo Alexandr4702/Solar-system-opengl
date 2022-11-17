@@ -161,6 +161,18 @@ void Body::rotateBody(Eigen::Quaternionf& q)
     orientation = q * orientation;
 }
 
+void Body::setBodyScale(Eigen::Vector3f& scale)
+{
+    std::scoped_lock guard(mtx);
+    this->scale = scale;
+}
+
+void Body::setBodyScale(Eigen::Vector3f &&scale)
+{
+    std::scoped_lock guard(mtx);
+    this->scale = scale;
+}
+
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
     std::scoped_lock guard(mtx);
