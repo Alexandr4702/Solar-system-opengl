@@ -5,6 +5,17 @@
 GlSimulation::GlSimulation(QWidget *parent): QOpenGLWidget(parent)
 {
     world = std::make_shared <World> ();
+    {
+        std::scoped_lock(pressedKeyMutex);
+        PressedKey[Qt::Key_W] = false;
+        PressedKey[Qt::Key_S] = false;
+        PressedKey[Qt::Key_A] = false;
+        PressedKey[Qt::Key_D] = false;
+        PressedKey[Qt::Key_Shift] = false;
+        PressedKey[Qt::Key_Space] = false;
+        PressedKey[Qt::Key_Q] = false;
+        PressedKey[Qt::Key_E] = false;
+    }
     grabKeyboard();
     grabMouse();
 }
@@ -60,6 +71,44 @@ void GlSimulation::paintThreadfoo()
 
     while(isPaintThreadRun)
     {
+        {
+            std::scoped_lock(pressedKeyMutex);
+
+            if(PressedKey[Qt::Key_W] == true)
+            {
+                cam.TranslateCam(Eigen::Vector3f(0, 0,  0.05));
+            }
+            if(PressedKey[Qt::Key_S] == true)
+            {
+                cam.TranslateCam(Eigen::Vector3f(0, 0, -0.05));
+            }
+            if(PressedKey[Qt::Key_A] == true)
+            {
+                cam.TranslateCam(Eigen::Vector3f(0.05 , 0, 0));
+            }
+            if(PressedKey[Qt::Key_D] == true)
+            {
+                cam.TranslateCam(Eigen::Vector3f(-0.05, 0, 0.0));
+            }
+            if(PressedKey[Qt::Key_Shift] == true)
+            {
+                cam.TranslateCam(Eigen::Vector3f(0, 0.05, 0));
+            }
+            if(PressedKey[Qt::Key_Space] == true)
+            {
+                cam.TranslateCam(Eigen::Vector3f(0, -0.05, 0));
+            }
+            if(PressedKey[Qt::Key_Q] == true)
+            {
+                float angle = 0.5 * M_PI / 180.0f;
+                cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
+            }
+            if(PressedKey[Qt::Key_E] == true)
+            {
+                float angle = -0.5 * M_PI / 180.0f;
+                cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
+            }
+        }
         update();
         std::this_thread::sleep_for(15ms);
     }
@@ -67,75 +116,20 @@ void GlSimulation::paintThreadfoo()
 
 void GlSimulation::keyPressEvent(QKeyEvent *event)
 {
+    if(event->isAutoRepeat())
+        return;
+    std::scoped_lock(pressedKeyMutex);
     int key = event->key();
-    switch(key)
-    {
-        case Qt::Key_W:
-        {
-            static int cnt = 0;
-            cam.TranslateCam(Eigen::Vector3f(0, 0, 0.05));
-        }break;
-        case Qt::Key_S:
-        {
-            cam.TranslateCam(Eigen::Vector3f(0, 0, -0.05));
-        }break;
-        case Qt::Key_A:
-        {
-            cam.TranslateCam(Eigen::Vector3f(0.05, 0, 0));
-        }break;
-        case Qt::Key_D:
-        {
-            cam.TranslateCam(Eigen::Vector3f(-0.05, 0, 0));
-        }break;
-        case Qt::Key_Shift:
-        {
-            cam.TranslateCam(Eigen::Vector3f(0, 0.05, 0));
-        }break;
-        case Qt::Key_Space:
-        {
-           cam.TranslateCam(Eigen::Vector3f(0, -0.05, 0));
-        }break;
-        case Qt::Key_Q:
-        {
-            float angle = 0.5 * M_PI / 180.0f;
-            cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
-        }break;
-        case Qt::Key_E:
-        {
-            float angle = -0.5 * M_PI / 180.0f;
-            cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
-        }break;
-    }
-    // std::cout << "Key pressed " << cam.getTranslation().transpose() << "\n";
-    // std::cout << "Matrix \n" << cam.getCameraProjectiveMatrix() << "\n";
+    PressedKey[key] = true;
 }
 
 void GlSimulation::keyReleaseEvent(QKeyEvent *event)
 {
+    if(event->isAutoRepeat())
+         return;
+    std::scoped_lock(pressedKeyMutex);
     int key = event->key();
-    switch(key)
-    {
-        case Qt::Key_W:
-        {
-            // std::cout << "Key Released \n";
-        }break;
-        case Qt::Key_S:
-        {
-        }break;
-        case Qt::Key_A:
-        {
-        }break;
-        case Qt::Key_D:
-        {
-        }break;
-        case Qt::Key_Shift:
-        {
-        }break;
-        case Qt::Key_Space:
-        {
-            // std::cout << "W released \n";
-        }break;
-    }
+    PressedKey[key] = false;
 }
 
 void GlSimulation::mouseMoveEvent(QMouseEvent *event)

@@ -45,7 +45,10 @@ private:
     Camera cam;
     std::thread paintThreadHandle;
     bool isPaintThreadRun = true;
+
+
     std::unordered_map<int, bool> PressedKey;
+    std::mutex pressedKeyMutex;
 };
 
 #endif // GLSIMULATION_H
