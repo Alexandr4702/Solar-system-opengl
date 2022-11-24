@@ -25,6 +25,7 @@ Body::Body(Body&& body)
     orientation = move(body.orientation);
     angularVelocity = move(body.angularVelocity);
     angularAcceleration = move(body.angularAcceleration);
+    meshes = move(body.meshes);
 
     ctx = body.ctx;
     body.ctx = nullptr;
@@ -59,6 +60,12 @@ void Body::update()
 }
 
 void Body::setBodyPosition(Eigen::Vector3f& pos)
+{
+    std::scoped_lock guard(mtx);
+    postition = pos;
+}
+
+void Body::setBodyPosition(Eigen::Vector3f&& pos)
 {
     std::scoped_lock guard(mtx);
     postition = pos;
@@ -112,7 +119,7 @@ bool Body::ImportModel(std::string pFile)
     aiString texture_path;
     std::filesystem::path path_to_file(pFile);
 
-    std::vector< std::pair<std::shared_ptr<QOpenGLTexture>, unsigned int>> textures;
+    std::vector< std::tuple<std::shared_ptr<QOpenGLTexture>, unsigned int, QImage>> textures;
 
     const aiScene* scene_ = importer.ReadFile( pFile,
                                 aiProcess_Triangulate            |
@@ -149,7 +156,7 @@ bool Body::ImportModel(std::string pFile)
                 if (!texture_image.isNull())
                 {
                     std::shared_ptr<QOpenGLTexture> texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(texture_image.mirrored()));
-                    textures.push_back({texture, texture_index});
+                    textures.push_back({texture, texture_index, texture_image});
                 }
             }
         }
@@ -159,8 +166,9 @@ bool Body::ImportModel(std::string pFile)
     {
         Mesh mesh(ctx);
 
-        mesh.texture = textures[scene_->mMeshes[k]->mMaterialIndex - 1].first;
-        unsigned int texture_index = textures[scene_->mMeshes[k]->mMaterialIndex - 1].second;
+        mesh.texture = std::get<0> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
+        unsigned int texture_index = std::get<1> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
+        mesh.raw_texture = std::get<2> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
 
         for(uint32_t i = 0; i < scene_->mMeshes[k]->mNumVertices;i++)
         {

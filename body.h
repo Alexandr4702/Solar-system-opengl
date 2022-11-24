@@ -47,6 +47,8 @@ class Mesh : public QOpenGLFunctions
      {
           vertices = move(oth.vertices);
           indices  = move(oth.indices);
+          raw_texture = std::move(oth.raw_texture);
+
           arrayBuf = move(oth.arrayBuf);
           indexBuf = move(oth.indexBuf);
           texture = move(oth.texture);
@@ -55,23 +57,51 @@ class Mesh : public QOpenGLFunctions
           oth.ctx = nullptr;
      }
 
-     Mesh(const Mesh& oth) = delete;
+     Mesh(const Mesh& oth): QOpenGLFunctions(oth.ctx),
+     indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
+     arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+     {
+          vertices = oth.vertices;
+          indices  = oth.indices;
+          raw_texture = oth.raw_texture;
+
+          arrayBuf->create();
+          indexBuf->create();
+
+          arrayBuf->bind();
+          arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
+
+          indexBuf->bind();
+          indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
+
+          texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(raw_texture.mirrored()));
+
+          ctx = oth.ctx;
+     }
+
+     // Mesh(const Mesh& oth) = delete;
 
      ~Mesh()
      {
           if(arrayBuf.get() != nullptr)
           {
-          arrayBuf->destroy();
+               arrayBuf->destroy();
           }
           if(indexBuf.get() != nullptr)
           {
-          indexBuf->destroy();
+               indexBuf->destroy();
+          }
+          if(texture.get() != nullptr)
+          {
+               texture->destroy();
           }
      }
      void draw(QOpenGLShaderProgram &program);
 
      std::vector<VertexData> vertices;
      std::vector<uint32_t> indices;
+
+     QImage raw_texture;
 
      std::shared_ptr<QOpenGLBuffer> arrayBuf;
      std::shared_ptr<QOpenGLBuffer> indexBuf;
@@ -98,6 +128,7 @@ public:
      void update();
 
      void setBodyPosition(Eigen::Vector3f &);
+     void setBodyPosition(Eigen::Vector3f &&);
      void translateBody(Eigen::Vector3f &);
 
      void setBodyRotation(Eigen::Quaternionf &q);

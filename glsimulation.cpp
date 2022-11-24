@@ -30,10 +30,17 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    // world->bodies.emplace_back(this->context(), "../resources/models/earth.obj");
+
+    // Body cubedat(this->context(), "../resources/models/CubSat3UVR.obj");
 
     world->bodies.emplace_back(this->context(), "../resources/models/CubSat3UVR.obj");
     world->bodies[0].setBodyScale({0.01, 0.01, 0.01});
+
+    world->bodies.emplace_back(this->context(), "../resources/models/CubSat3UVR.obj");
+    world->bodies[1].setBodyScale({0.01, 0.01, 0.01});
+    world->bodies[1].setBodyPosition({3, 0, 0});
+
+    world->bodies.emplace_back(this->context(), "../resources/models/earth.obj");
 
     // world->bodies.emplace_back(this->context(), "../resources/Cube.stl");
 
