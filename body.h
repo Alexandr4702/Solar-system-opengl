@@ -41,6 +41,9 @@ class Mesh : public QOpenGLFunctions
      {
           arrayBuf->create();
           indexBuf->create();
+
+          indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
      }
 
      Mesh(Mesh&& oth): QOpenGLFunctions(oth.ctx)
@@ -67,6 +70,9 @@ class Mesh : public QOpenGLFunctions
 
           arrayBuf->create();
           indexBuf->create();
+
+          indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
 
           arrayBuf->bind();
           arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
