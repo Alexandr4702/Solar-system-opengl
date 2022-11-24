@@ -60,6 +60,35 @@ class Mesh : public QOpenGLFunctions
           oth.ctx = nullptr;
      }
 
+     Mesh& operator=(Mesh&& other)
+     {
+          if(arrayBuf.get() != nullptr)
+          {
+               arrayBuf->destroy();
+          }
+          if(indexBuf.get() != nullptr)
+          {
+               indexBuf->destroy();
+          }
+          if(texture.get() != nullptr)
+          {
+               texture->destroy();
+          }
+
+          vertices = move(other.vertices);
+          indices  = move(other.indices);
+          raw_texture = std::move(other.raw_texture);
+
+          arrayBuf = move(other.arrayBuf);
+          indexBuf = move(other.indexBuf);
+          texture = move(other.texture);
+
+          ctx = other.ctx;
+          other.ctx = nullptr;
+
+          return *this;
+     }
+
      Mesh(const Mesh& oth): QOpenGLFunctions(oth.ctx),
      indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
      arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
@@ -85,7 +114,43 @@ class Mesh : public QOpenGLFunctions
           ctx = oth.ctx;
      }
 
-     // Mesh(const Mesh& oth) = delete;
+     Mesh& operator=(const Mesh& oth)
+     {
+          if(arrayBuf.get() != nullptr)
+          {
+               arrayBuf->destroy();
+          }
+          if(indexBuf.get() != nullptr)
+          {
+               indexBuf->destroy();
+          }
+          if(texture.get() != nullptr)
+          {
+               texture->destroy();
+          }
+
+          vertices = oth.vertices;
+          indices  = oth.indices;
+          raw_texture = oth.raw_texture;
+
+          arrayBuf->create();
+          indexBuf->create();
+
+          indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+          arrayBuf->bind();
+          arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
+
+          indexBuf->bind();
+          indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
+
+          texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(raw_texture.mirrored()));
+
+          ctx = oth.ctx;
+
+          return *this;
+     }
 
      ~Mesh()
      {
@@ -127,7 +192,9 @@ public:
      Body(QOpenGLContext *);
      Body(QOpenGLContext *, std::string filename);
      Body(Body &&);
-     Body(const Body &); // TODO
+     Body& operator=(Body &&);
+     Body(const Body &);
+     Body& operator=(const Body &);
      ~Body();
      void draw(QOpenGLShaderProgram &program);
      void draw(QOpenGLShaderProgram &program, Eigen::Matrix4f &matrixCam);

@@ -31,6 +31,24 @@ Body::Body(Body&& body)
     body.ctx = nullptr;
 }
 
+Body& Body::operator=(Body&& body)
+{
+    using namespace std;
+    mass = body.mass;
+    J = move(body.J);
+    scale = move(body.scale);
+    postition = move(body.postition);
+    velocity = move(body.velocity);
+    acceleration = move(body.acceleration);
+    orientation = move(body.orientation);
+    angularVelocity = move(body.angularVelocity);
+    angularAcceleration = move(body.angularAcceleration);
+    meshes = move(body.meshes);
+
+    ctx = body.ctx;
+    body.ctx = nullptr;
+}
+
 Body::Body(const Body& body):meshes(body.meshes)
 {
     mass = body.mass;
@@ -43,6 +61,21 @@ Body::Body(const Body& body):meshes(body.meshes)
     angularVelocity = (body.angularVelocity);
     angularAcceleration = (body.angularAcceleration);
 
+    ctx = body.ctx;
+}
+
+Body& Body::operator=(const Body & body)
+{
+    mass = body.mass;
+    J = body.J;
+    scale = (body.scale);
+    postition = (body.postition);
+    velocity = (body.velocity);
+    acceleration = (body.acceleration);
+    orientation = (body.orientation);
+    angularVelocity = (body.angularVelocity);
+    angularAcceleration = (body.angularAcceleration);
+    meshes = body.meshes;
 
     ctx = body.ctx;
 }
