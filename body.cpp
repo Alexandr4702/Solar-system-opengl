@@ -211,6 +211,12 @@ bool Body::ImportModel(std::string pFile)
         }
     }
 
+    if((scene_->mNumMaterials - 1) != textures.size())
+    {
+        std::cerr << "Unable to load textures\n";
+        return false;
+    }
+
     for(uint16_t k = 0; k < scene_->mNumMeshes; k++)
     {
         Mesh mesh(ctx);
