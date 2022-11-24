@@ -25,10 +25,67 @@
 
 #include "camera.h"
 
+struct VertexData
+{
+     Eigen::Vector3f position;
+     Eigen::Vector2f texCoord;
+     Eigen::Vector3f normal;
+};
+
+class Mesh : public QOpenGLFunctions
+{
+     public:
+     Mesh(QOpenGLContext* ctx_) : QOpenGLFunctions(ctx_), ctx(ctx_),
+     indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
+     arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+     {
+          arrayBuf->create();
+          indexBuf->create();
+     }
+
+     Mesh(Mesh&& oth): QOpenGLFunctions(oth.ctx)
+     {
+          vertices = move(oth.vertices);
+          indices  = move(oth.indices);
+          arrayBuf = move(oth.arrayBuf);
+          indexBuf = move(oth.indexBuf);
+          texture = move(oth.texture);
+
+          ctx = oth.ctx;
+          oth.ctx = nullptr;
+     }
+
+     Mesh(const Mesh& oth) = delete;
+
+     ~Mesh()
+     {
+          if(arrayBuf.get() != nullptr)
+          {
+          arrayBuf->destroy();
+          }
+          if(indexBuf.get() != nullptr)
+          {
+          indexBuf->destroy();
+          }
+     }
+     void draw(QOpenGLShaderProgram &program);
+
+     std::vector<VertexData> vertices;
+     std::vector<uint32_t> indices;
+
+     std::shared_ptr<QOpenGLBuffer> arrayBuf;
+     std::shared_ptr<QOpenGLBuffer> indexBuf;
+
+     std::shared_ptr<QOpenGLTexture> texture = nullptr;
+
+     private:
+     QOpenGLContext *ctx;
+};
+
 /*
 @brief Class contains information about body and his 3d model.
 */
-class Body : public QOpenGLFunctions
+class Body
 {
 public:
      Body(QOpenGLContext *);
@@ -53,15 +110,7 @@ public:
 
 private:
      bool ImportModel(std::string pFile);
-
-     struct VertexData
-     {
-          Eigen::Vector3f position;
-          Eigen::Vector2f texCoord;
-          Eigen::Vector3f normal;
-     };
      bool ImportTestModel();
-
 private:
      QOpenGLContext *ctx;
      /*
@@ -83,14 +132,7 @@ private:
      Eigen::Vector3f angularAcceleration = {0, 0, 0};
      mutable std::mutex mtx;
 
-     std::vector<VertexData> vertices;
-     std::vector<uint32_t> indices;
-     uint32_t numberOfFaces = 0;
-
-     std::shared_ptr<QOpenGLBuffer> arrayBuf;
-     std::shared_ptr<QOpenGLBuffer> indexBuf;
-
-     std::shared_ptr<QOpenGLTexture> texture = nullptr;
+     std::vector<Mesh> meshes;
 };
 
 #endif // BODY_H

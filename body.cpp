@@ -2,66 +2,18 @@
 
 #include <iostream>
 
-void Body::drawCube()
+Body::Body(QOpenGLContext* context): ctx(context)
 {
-    double vertex[] =
-    {
-        -1.f,  1.f, -1.f,   255.0,
-        1.f,  1.f, -1.f,    255.0,
-        -1.f, -1.f, -1.f,   255.0,
-        1.f, -1.f, -1.f,    255.0,
-        -1.f, -1.f,  1.f,   255.0,
-        -1.f,  1.f,  1.f,   255.0,
-        1.f,  1.f,  1.f,    255.0,
-        1.f, -1.f,  1.f,    255.0,
-        -1.f, -1.f, -1.f,   255.0,
-        -1.f,  1.f, -1.f,   255.0,
-        -1.f,  1.f,  1.f,   255.0,
-        -1.f, -1.f,  1.f,   255.0,
-        1.f, -1.f, -1.f,    255.0,
-        1.f,  1.f, -1.f,    255.0,
-        1.f,  1.f,  1.f,    255.0,
-        1.f, -1.f,  1.f,    255.0,
-        -1.f, -1.f,  1.f,   255.0,
-        -1.f, -1.f, -1.f,   255.0,
-        1.f, -1.f, -1.f,    255.0,
-        1.f, -1.f,  1.f,    255.0,
-        -1.f,  1.f,  1.f,   255.0,
-        -1.f,  1.f, -1.f,   255.0,
-        1.f,  1.f, -1.f,    255.0,
-        1.f,  1.f,  1.f    ,255.0,
-    };
-
-    glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, sizeof(vertex[0]) * 4, vertex);
-    glEnableVertexAttribArray(0);
-    glDrawArrays(GL_QUADS, 0, 24);
-
-    // f->glVertexAttribPointer(1, 1, GL_DOUBLE, GL_FALSE, sizeof(vertex[0]) * 4, vertex+3);
-    // f->glEnableVertexAttribArray(1);
-}
-
-Body::Body(QOpenGLContext* context): QOpenGLFunctions(context), ctx(context),
-indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
-arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
-{
-    arrayBuf->create();
-    indexBuf->create();
-
-    ImportModel("../resources/Sphere.stl");
     // ImportTestModel();
 }
 
-Body::Body(QOpenGLContext* context, std::string filename): QOpenGLFunctions(context), ctx(context),
-indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
-arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+Body::Body(QOpenGLContext* context, std::string filename): ctx(context)
 {
-    arrayBuf->create();
-    indexBuf->create();
 
     ImportModel(filename);
 }
 
-Body::Body(Body&& body): QOpenGLFunctions(body.ctx)
+Body::Body(Body&& body)
 {
     using namespace std;
     mass = body.mass;
@@ -74,55 +26,24 @@ Body::Body(Body&& body): QOpenGLFunctions(body.ctx)
     angularVelocity = move(body.angularVelocity);
     angularAcceleration = move(body.angularAcceleration);
 
-    numberOfFaces = body.numberOfFaces;
-    vertices = move(body.vertices);
-    indices  = move(body.indices);
-    arrayBuf = move(body.arrayBuf);
-    indexBuf = move(body.indexBuf);
-    texture = move(body.texture);
-
     ctx = body.ctx;
     body.ctx = nullptr;
 }
 
 Body::~Body()
 {
-    if(arrayBuf.get() != nullptr)
-    {
-            arrayBuf->destroy();
-    }
-    if(indexBuf.get() != nullptr)
-    {
-            indexBuf->destroy();
-    }
+
 }
 
 void Body::draw(QOpenGLShaderProgram& program)
 {
-    arrayBuf->bind();
-    indexBuf->bind();
-
-    // int vertexLocation = program.attributeLocation("a_position");
-    int vertexLocation = 0;
-    program.enableAttributeArray(vertexLocation);
-    program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(vertices[0]));
-
-    int texture_coordinate_loaction = 1;
-    program.enableAttributeArray(texture_coordinate_loaction);
-    program.setAttributeBuffer(texture_coordinate_loaction, GL_FLOAT, offsetof(VertexData, texCoord), 2, sizeof(vertices[0]));
-
-    int normal_location = 2;
-    program.enableAttributeArray(normal_location);
-    program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 2, sizeof(vertices[0]));
-
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+    for(auto&& mesh: meshes)
+        mesh.draw(program);
 }
 
 void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam)
 {
     // mvp[0][0];
-    if(texture.get() != nullptr)
-        texture->bind();
 
     Eigen::Matrix4f mvpMat = (matrixCam * getBodyMatrix()).transpose();
 
@@ -189,9 +110,9 @@ bool Body::ImportModel(std::string pFile)
 {
     Assimp::Importer importer;
     aiString texture_path;
-    unsigned int texture_index;
-    QImage texture_image;
     std::filesystem::path path_to_file(pFile);
+
+    std::vector< std::pair<std::shared_ptr<QOpenGLTexture>, unsigned int>> textures;
 
     const aiScene* scene_ = importer.ReadFile( pFile,
                                 aiProcess_Triangulate            |
@@ -208,72 +129,89 @@ bool Body::ImportModel(std::string pFile)
         return false;
     }
 
-    for(uint32_t i = 0; i < scene_->mNumMaterials; i++)
+    for(uint32_t i = 0; i < (scene_->mNumMaterials); i++)
     {
-        std::cout << (scene_->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE)) << " " << 1 << " " << i << " \n";
-        if((scene_->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE)) > 0)
+        for(uint32_t j = 0; j < 22; j++)
         {
-            scene_->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texture_path, NULL, &texture_index);
+
+            // std::cout << (scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) << " " << j << " " << i << " \n";
+
+            if((scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) > 0)
+            {
+                unsigned int texture_index;
+                scene_->mMaterials[i]->GetTexture(static_cast<aiTextureType> (j), 0, &texture_path, NULL, &texture_index);
+                QImage texture_image;
+                // std::cout << path_to_file.parent_path().string() << "\n";
+                QString path_to_texture = QString(path_to_file.parent_path().string().c_str()) + QString("/") + QString(texture_path.C_Str());
+                qDebug() << path_to_texture;
+                texture_image = QImage(path_to_texture);
+
+                if (!texture_image.isNull())
+                {
+                    std::shared_ptr<QOpenGLTexture> texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(texture_image.mirrored()));
+                    textures.push_back({texture, texture_index});
+                }
+            }
         }
     }
 
-    std::cout << path_to_file.parent_path().string() << "\n";
-    QString path_to_texture = QString(path_to_file.parent_path().string().c_str()) + QString("/") + QString(texture_path.C_Str());
-    qDebug() << path_to_texture;
-    texture_image = QImage(path_to_texture);
-
-    if (!texture_image.isNull())
+    for(uint16_t k = 0; k < scene_->mNumMeshes; k++)
     {
-        texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(texture_image.mirrored()));
-    }
+        Mesh mesh(ctx);
 
-    for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumVertices;i++)
-    {
-        VertexData vertex;
-        vertex.position = Eigen::Vector3f(
-        scene_->mMeshes[0]->mVertices[i].x,
-        scene_->mMeshes[0]->mVertices[i].y,
-        scene_->mMeshes[0]->mVertices[i].z
-        );
+        mesh.texture = textures[scene_->mMeshes[k]->mMaterialIndex - 1].first;
+        unsigned int texture_index = textures[scene_->mMeshes[k]->mMaterialIndex - 1].second;
 
-        if(scene_->mMeshes[0]->mTextureCoords[texture_index] != nullptr)
+        for(uint32_t i = 0; i < scene_->mMeshes[k]->mNumVertices;i++)
         {
-            vertex.texCoord = Eigen::Vector2f(
-                scene_->mMeshes[0]->mTextureCoords[texture_index][i].x,
-                scene_->mMeshes[0]->mTextureCoords[texture_index][i].y
+            VertexData vertex;
+            vertex.position = Eigen::Vector3f(
+            scene_->mMeshes[k]->mVertices[i].x,
+            scene_->mMeshes[k]->mVertices[i].y,
+            scene_->mMeshes[k]->mVertices[i].z
             );
+
+            if(scene_->mMeshes[k]->mTextureCoords[texture_index] != nullptr)
+            {
+                vertex.texCoord = Eigen::Vector2f(
+                    scene_->mMeshes[k]->mTextureCoords[texture_index][i].x,
+                    scene_->mMeshes[k]->mTextureCoords[texture_index][i].y
+                );
+            }
+
+            vertex.normal = Eigen::Vector3f(
+            scene_->mMeshes[k]->mNormals[i].x,
+            scene_->mMeshes[k]->mNormals[i].y,
+            scene_->mMeshes[k]->mNormals[i].z
+            );
+            mesh.vertices.push_back(vertex);
         }
 
-        vertex.normal = Eigen::Vector3f(
-        scene_->mMeshes[0]->mNormals[i].x,
-        scene_->mMeshes[0]->mNormals[i].y,
-        scene_->mMeshes[0]->mNormals[i].z
-        );
-        vertices.push_back(vertex);
-    }
-
-    numberOfFaces = scene_->mMeshes[0]->mNumFaces;
-
-    for(uint32_t i = 0; i < scene_->mMeshes[0]->mNumFaces;i++)
-    {
-        for(uint32_t j = 0; j < scene_->mMeshes[0]->mFaces[i].mNumIndices; j++)
+        for(uint32_t i = 0; i < scene_->mMeshes[k]->mNumFaces;i++)
         {
-            indices.push_back(scene_->mMeshes[0]->mFaces[i].mIndices[j]);
+            for(uint32_t j = 0; j < scene_->mMeshes[k]->mFaces[i].mNumIndices; j++)
+            {
+                mesh.indices.push_back(scene_->mMeshes[k]->mFaces[i].mIndices[j]);
+            }
         }
+
+        mesh.arrayBuf->bind();
+        mesh.arrayBuf->allocate(mesh.vertices.data(), mesh.vertices.size() * sizeof(mesh.vertices[0]));
+
+        mesh.indexBuf->bind();
+        mesh.indexBuf->allocate(mesh.indices.data(), mesh.indices.size() * sizeof(mesh.indices[0]));
+
+        meshes.push_back(std::move(mesh));
     }
-
-    arrayBuf->bind();
-    arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
-
-    indexBuf->bind();
-    indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
 
     return true;
 }
 
 bool Body::ImportTestModel()
 {
-    std::vector <VertexData> cubeVertices = {
+    Mesh mesh(ctx);
+
+        std::vector <VertexData> cubeVertices = {
         { {-1.0f, -1.0f,  1.0f}, {0.0f, 0.0f } },
         { { 1.0f, -1.0f,  1.0f}, {0.33f, 0.0f} },
         { {-1.0f,  1.0f,  1.0f}, {0.0f, 0.5f } },
@@ -312,22 +250,46 @@ bool Body::ImportTestModel()
         20, 20, 21, 22, 23
     };
 
-    for (auto&& vertex: cubeVertices)
-    {
-        VertexData vertex_ = {vertex.position, vertex.texCoord, Eigen::Vector3f::Zero()};
+    // for (auto&& vertex: cubeVertices)
+    // {
+    //     VertexData vertex_ = {vertex.position, vertex.texCoord, Eigen::Vector3f::Zero()};
 
-        vertices.push_back(vertex_);
-    }
+    //     vertices.push_back(vertex_);
+    // }
 
-    for (auto&& index: cubeIndices)
-    {
-        indices.push_back(index);
-    }
+    // for (auto&& index: cubeIndices)
+    // {
+    //     indices.push_back(index);
+    // }
+
+    // arrayBuf->bind();
+    // arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
+
+    // indexBuf->bind();
+    // indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
+    return true;
+}
+
+void Mesh::draw(QOpenGLShaderProgram &program)
+{
+    if(texture.get() != nullptr)
+        texture->bind();
 
     arrayBuf->bind();
-    arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
-
     indexBuf->bind();
-    indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
-    return true;
+
+    // int vertexLocation = program.attributeLocation("a_position");
+    int vertexLocation = 0;
+    program.enableAttributeArray(vertexLocation);
+    program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(vertices[0]));
+
+    int texture_coordinate_loaction = 1;
+    program.enableAttributeArray(texture_coordinate_loaction);
+    program.setAttributeBuffer(texture_coordinate_loaction, GL_FLOAT, offsetof(VertexData, texCoord), 2, sizeof(vertices[0]));
+
+    int normal_location = 2;
+    program.enableAttributeArray(normal_location);
+    program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 2, sizeof(vertices[0]));
+
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 }
