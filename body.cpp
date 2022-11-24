@@ -190,7 +190,7 @@ bool Body::ImportModel(std::string pFile)
         for(uint32_t j = 0; j < 22; j++)
         {
 
-            // std::cout << (scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) << " " << j << " " << i << " \n";
+            std::cout << (scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) << " " << j << " " << i << " \n";
 
             if((scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) > 0)
             {
@@ -206,12 +206,15 @@ bool Body::ImportModel(std::string pFile)
                 {
                     std::shared_ptr<QOpenGLTexture> texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(texture_image.mirrored()));
                     textures.push_back({texture, texture_index, texture_image});
+                } else{
+                    std::cerr << "Unable to load textures\n";
+                    return false;
                 }
             }
         }
     }
 
-    if((scene_->mNumMaterials - 1) != textures.size())
+    if(textures.size() == 0)
     {
         std::cerr << "Unable to load textures\n";
         return false;

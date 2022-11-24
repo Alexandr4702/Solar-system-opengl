@@ -32,16 +32,20 @@ void GlSimulation::initializeGL()
 
 
     Body cubedat(this->context(), "../resources/models/CubSat3UVR.obj");
+    Body earth(this->context(), "../resources/59-earth/earth2.stl");
+
     cubedat.setBodyScale({0.01, 0.01, 0.01});
     world->bodies.emplace_back(cubedat);
 
     cubedat.setBodyPosition({3, 0, 0});
     world->bodies.emplace_back(cubedat);
 
+    world->bodies.emplace_back(earth);
+
     createShaderProgramFromFiles(shaderProgramm, "../resources/vertex_shader.vert", "../resources/fragment_shader.frag");
 
     glClearDepth(1.f);
-    glClearColor(0.3f, 0.3f, 0.3f, 0.f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.f);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
