@@ -31,6 +31,22 @@ Body::Body(Body&& body)
     body.ctx = nullptr;
 }
 
+Body::Body(const Body& body):meshes(body.meshes)
+{
+    mass = body.mass;
+    J = body.J;
+    scale = (body.scale);
+    postition = (body.postition);
+    velocity = (body.velocity);
+    acceleration = (body.acceleration);
+    orientation = (body.orientation);
+    angularVelocity = (body.angularVelocity);
+    angularAcceleration = (body.angularAcceleration);
+
+
+    ctx = body.ctx;
+}
+
 Body::~Body()
 {
 

@@ -127,7 +127,7 @@ public:
      Body(QOpenGLContext *);
      Body(QOpenGLContext *, std::string filename);
      Body(Body &&);
-     Body(const Body &) = delete; // TODO
+     Body(const Body &); // TODO
      ~Body();
      void draw(QOpenGLShaderProgram &program);
      void draw(QOpenGLShaderProgram &program, Eigen::Matrix4f &matrixCam);
