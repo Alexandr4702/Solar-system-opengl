@@ -30,19 +30,26 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
+    createShaderProgramFromFiles(shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
 
-    Body cubedat(this->context(), "../resources/models/CubSat3UVR.obj");
-    Body earth(this->context(), "../resources/59-earth/earth2.stl");
 
-    cubedat.setBodyScale({0.01, 0.01, 0.01});
-    world->bodies.emplace_back(cubedat);
+    Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
+    Cubesat6u.setBodyScale({0.001, 0.001, 0.001});
 
-    cubedat.setBodyPosition({3, 0, 0});
-    world->bodies.emplace_back(cubedat);
+    Body Earth(this->context(), "../resources/models/earth.obj");
+    Earth.setBodyPosition({-5, 0, 0});
 
-    world->bodies.emplace_back(earth);
+    Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
 
-    createShaderProgramFromFiles(shaderProgramm, "../resources/vertex_shader.vert", "../resources/fragment_shader.frag");
+    world->bodies.emplace_back(Cubesat6u);
+
+    Cubesat6u.setBodyPosition({3, 0, 0});
+    world->bodies.emplace_back(Cubesat6u);
+
+    world->bodies.emplace_back(Earth);
+
+    world->bodies.emplace_back(Sun);
+
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -69,6 +76,8 @@ void GlSimulation::paintGL()
 void GlSimulation::paintThreadfoo()
 {
     using namespace std::literals::chrono_literals;
+    float translation = 0.05;
+    float ang_rot = 0.5;
 
     while(isPaintThreadRun)
     {
@@ -77,36 +86,36 @@ void GlSimulation::paintThreadfoo()
 
             if(PressedKey[Qt::Key_W] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, 0,  0.05));
+                cam.TranslateCam(Eigen::Vector3f(0, 0,  translation));
             }
             if(PressedKey[Qt::Key_S] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, 0, -0.05));
+                cam.TranslateCam(Eigen::Vector3f(0, 0, -translation));
             }
             if(PressedKey[Qt::Key_A] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0.05 , 0, 0));
+                cam.TranslateCam(Eigen::Vector3f(translation , 0, 0));
             }
             if(PressedKey[Qt::Key_D] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(-0.05, 0, 0.0));
+                cam.TranslateCam(Eigen::Vector3f(-translation, 0, 0.0));
             }
             if(PressedKey[Qt::Key_Shift] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, 0.05, 0));
+                cam.TranslateCam(Eigen::Vector3f(0, translation, 0));
             }
             if(PressedKey[Qt::Key_Space] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, -0.05, 0));
+                cam.TranslateCam(Eigen::Vector3f(0, -translation, 0));
             }
             if(PressedKey[Qt::Key_Q] == true)
             {
-                float angle = 0.5 * M_PI / 180.0f;
+                float angle = ang_rot * M_PI / 180.0f;
                 cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
             if(PressedKey[Qt::Key_E] == true)
             {
-                float angle = -0.5 * M_PI / 180.0f;
+                float angle = -ang_rot * M_PI / 180.0f;
                 cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
         }
