@@ -203,7 +203,8 @@ public:
      void setBodyPosition(Eigen::Vector3d&);
      void setBodyPosition(Eigen::Vector3d&&);
      void translateBody(Eigen::Vector3d&);
-     void getBodyTranslationMetr(Eigen::Vector3d&);
+
+     Eigen::Vector3d getBodyTranslationMetr() const;
 
      void setBodyRotation(Eigen::Quaterniond& q);
      void rotateBody(Eigen::Quaterniond& q);
