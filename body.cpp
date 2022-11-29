@@ -47,6 +47,7 @@ Body& Body::operator=(Body&& body)
 
     ctx = body.ctx;
     body.ctx = nullptr;
+    return*this;
 }
 
 Body::Body(const Body& body):meshes(body.meshes)
@@ -78,6 +79,7 @@ Body& Body::operator=(const Body & body)
     meshes = body.meshes;
 
     ctx = body.ctx;
+    return *this;
 }
 
 Body::~Body()
@@ -108,43 +110,43 @@ void Body::update()
     std::scoped_lock guard(mtx);
 }
 
-void Body::setBodyPosition(Eigen::Vector3f& pos)
+void Body::setBodyPosition(Eigen::Vector3d& pos)
 {
     std::scoped_lock guard(mtx);
     postition = pos;
 }
 
-void Body::setBodyPosition(Eigen::Vector3f&& pos)
+void Body::setBodyPosition(Eigen::Vector3d&& pos)
 {
     std::scoped_lock guard(mtx);
     postition = pos;
 }
 
-void Body::translateBody(Eigen::Vector3f& translation)
+void Body::translateBody(Eigen::Vector3d& translation)
 {
     std::scoped_lock guard(mtx);
     postition += translation;
 }
 
-void Body::setBodyRotation(Eigen::Quaternionf& q)
+void Body::setBodyRotation(Eigen::Quaterniond& q)
 {
     std::scoped_lock guard(mtx);
     orientation = q;
 }
 
-void Body::rotateBody(Eigen::Quaternionf& q)
+void Body::rotateBody(Eigen::Quaterniond& q)
 {
     std::scoped_lock guard(mtx);
     orientation = q * orientation;
 }
 
-void Body::setBodyScale(Eigen::Vector3f& scale)
+void Body::setBodyScale(Eigen::Vector3d& scale)
 {
     std::scoped_lock guard(mtx);
     this->scale = scale;
 }
 
-void Body::setBodyScale(Eigen::Vector3f &&scale)
+void Body::setBodyScale(Eigen::Vector3d &&scale)
 {
     std::scoped_lock guard(mtx);
     this->scale = scale;
@@ -153,13 +155,13 @@ void Body::setBodyScale(Eigen::Vector3f &&scale)
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
     std::scoped_lock guard(mtx);
-    Eigen::Affine3f bodyMatrix;
+    Eigen::Affine3d bodyMatrix;
     bodyMatrix.setIdentity();
     bodyMatrix.translate(postition);
     bodyMatrix.rotate(orientation);
     bodyMatrix.scale(scale);
 
-    return bodyMatrix.matrix();
+    return bodyMatrix.matrix().cast <float>();
 }
 
 bool Body::ImportModel(std::string pFile)

@@ -200,16 +200,16 @@ public:
      void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam);
      void update();
 
-     void setBodyPosition(Eigen::Vector3f&);
-     void setBodyPosition(Eigen::Vector3f&&);
-     void translateBody(Eigen::Vector3f&);
-     void getBodyTranslationMetr(Eigen::Vector3f&);
+     void setBodyPosition(Eigen::Vector3d&);
+     void setBodyPosition(Eigen::Vector3d&&);
+     void translateBody(Eigen::Vector3d&);
+     void getBodyTranslationMetr(Eigen::Vector3d&);
 
-     void setBodyRotation(Eigen::Quaternionf& q);
-     void rotateBody(Eigen::Quaternionf& q);
+     void setBodyRotation(Eigen::Quaterniond& q);
+     void rotateBody(Eigen::Quaterniond& q);
 
-     void setBodyScale(Eigen::Vector3f& scale);
-     void setBodyScale(Eigen::Vector3f&& scale);
+     void setBodyScale(Eigen::Vector3d& scale);
+     void setBodyScale(Eigen::Vector3d&& scale);
 
      Eigen::Matrix4f getBodyMatrix() const;
 
@@ -223,21 +223,21 @@ private:
      */
      void drawCube();
 
-     Eigen::Matrix3f J;
+     Eigen::Matrix3d J;
      double mass;
 
-     Eigen::Vector3f scale = {1, 1, 1};
+     Eigen::Vector3d scale = {1, 1, 1};
 
      //lihgt seconds 299792458
-     Eigen::Vector3f postition = {0, 0, 0};
+     Eigen::Vector3d postition = {0, 0, 0};
      float positionToMetr = 1;
      //lihgt seconds/s 299792458
-     Eigen::Vector3f velocity = {0, 0, 0};
-     Eigen::Vector3f acceleration = {0, 0, 0};
+     Eigen::Vector3d velocity = {0, 0, 0};
+     Eigen::Vector3d acceleration = {0, 0, 0};
 
-     Eigen::Quaternionf orientation = Eigen::Quaternionf::Identity();
-     Eigen::Vector3f angularVelocity = {0, 0, 0};
-     Eigen::Vector3f angularAcceleration = {0, 0, 0};
+     Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
+     Eigen::Vector3d angularVelocity = {0, 0, 0};
+     Eigen::Vector3d angularAcceleration = {0, 0, 0};
      mutable std::mutex mtx;
 
      std::vector<Mesh> meshes;
