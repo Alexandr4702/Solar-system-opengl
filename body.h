@@ -203,6 +203,7 @@ public:
      void setBodyPosition(Eigen::Vector3f&);
      void setBodyPosition(Eigen::Vector3f&&);
      void translateBody(Eigen::Vector3f&);
+     void getBodyTranslationMetr(Eigen::Vector3f&);
 
      void setBodyRotation(Eigen::Quaternionf& q);
      void rotateBody(Eigen::Quaternionf& q);
@@ -229,6 +230,7 @@ private:
 
      //lihgt seconds 299792458
      Eigen::Vector3f postition = {0, 0, 0};
+     float positionToMetr = 1;
      //lihgt seconds/s 299792458
      Eigen::Vector3f velocity = {0, 0, 0};
      Eigen::Vector3f acceleration = {0, 0, 0};

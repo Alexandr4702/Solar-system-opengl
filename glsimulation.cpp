@@ -32,28 +32,29 @@ void GlSimulation::initializeGL()
 
     createShaderProgramFromFiles(shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
 
-    float scaleFactor = 1.0 / 299792458.0 * 1e2;
+    float SizeScaleFactor = 1.0 / 299792458.0 * 1e2;
+    float DisctaneScaleFactor = 1.0 / 299792458.0 * 1e2;
 
     Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
     // by default is mm
-    float CubesatScale = 1 * scaleFactor;
+    float CubesatScale = 1 * SizeScaleFactor;
     Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
 
     Body Earth(this->context(), "../resources/models/earth.obj");
     //6371000m to the light mseconds 299792458
-    float EarthScale = 6371 * 1e3 * scaleFactor;
+    float EarthScale = 6371 * 1e3 * SizeScaleFactor;
     Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
 
-    float EarthPos = 149.6 * 1e6 * 1e3 * scaleFactor;
+    float EarthPos = 149.6 * 1e6 * 1e3 * SizeScaleFactor;
     Eigen::Vector3f EarthPosVec({EarthPos, 0, 0});
     // Earth.setBodyPosition(EarthPosVec);
 
     Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
-    float SunScale = 695700 * 1e3 * scaleFactor;
+    float SunScale = 695700 * 1e3 * SizeScaleFactor;
     Sun.setBodyScale({SunScale, SunScale, SunScale});
 
     Body Neptune(this->context(), "../resources/models/Neptune/Neptune.obj");
-    float NeptuneScale = 24622 * 1e3 * scaleFactor;
+    float NeptuneScale = 24622 * 1e3 * SizeScaleFactor;
     Neptune.setBodyScale({NeptuneScale, NeptuneScale, NeptuneScale});
 
     world->bodies.emplace_back(Cubesat6u);
