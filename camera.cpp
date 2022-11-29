@@ -44,7 +44,7 @@ void Camera::TranslateCam(Eigen::Vector3f transl)
 void Camera::setTranslationCam(Eigen::Vector3f transl)
 {
     std::scoped_lock guard(mtx);
-    translation = transl;
+    translation = -transl;
 }
 
 void Camera::rotateCam(Eigen::Quaternionf rot)
@@ -128,5 +128,5 @@ void Camera::rotateCam(Eigen::Vector2f& mouseCoord)
 void Camera::setAspectRatio(float ratio)
 {
     std::scoped_lock guard(mtx);
-    projectiveMatrix = projective_matrix(60.f, ratio, 1.f, 100.0f);
+    projectiveMatrix = projective_matrix(60.f, ratio, 1e-5f, 1e3f);
 }

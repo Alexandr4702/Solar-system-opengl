@@ -189,26 +189,26 @@ class Mesh : public QOpenGLFunctions
 class Body
 {
 public:
-     Body(QOpenGLContext *);
-     Body(QOpenGLContext *, std::string filename);
-     Body(Body &&);
-     Body& operator=(Body &&);
-     Body(const Body &);
-     Body& operator=(const Body &);
+     Body(QOpenGLContext*);
+     Body(QOpenGLContext*, std::string filename);
+     Body(Body&&);
+     Body& operator=(Body&&);
+     Body(const Body&);
+     Body& operator=(const Body&);
      ~Body();
-     void draw(QOpenGLShaderProgram &program);
-     void draw(QOpenGLShaderProgram &program, Eigen::Matrix4f &matrixCam);
+     void draw(QOpenGLShaderProgram& program);
+     void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam);
      void update();
 
-     void setBodyPosition(Eigen::Vector3f &);
-     void setBodyPosition(Eigen::Vector3f &&);
-     void translateBody(Eigen::Vector3f &);
+     void setBodyPosition(Eigen::Vector3f&);
+     void setBodyPosition(Eigen::Vector3f&&);
+     void translateBody(Eigen::Vector3f&);
 
-     void setBodyRotation(Eigen::Quaternionf &q);
-     void rotateBody(Eigen::Quaternionf &q);
+     void setBodyRotation(Eigen::Quaternionf& q);
+     void rotateBody(Eigen::Quaternionf& q);
 
-     void setBodyScale(Eigen::Vector3f &scale);
-     void setBodyScale(Eigen::Vector3f &&scale);
+     void setBodyScale(Eigen::Vector3f& scale);
+     void setBodyScale(Eigen::Vector3f&& scale);
 
      Eigen::Matrix4f getBodyMatrix() const;
 
@@ -227,7 +227,9 @@ private:
 
      Eigen::Vector3f scale = {1, 1, 1};
 
+     //lihgt seconds 299792458
      Eigen::Vector3f postition = {0, 0, 0};
+     //lihgt seconds/s 299792458
      Eigen::Vector3f velocity = {0, 0, 0};
      Eigen::Vector3f acceleration = {0, 0, 0};
 

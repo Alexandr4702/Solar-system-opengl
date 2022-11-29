@@ -32,24 +32,38 @@ void GlSimulation::initializeGL()
 
     createShaderProgramFromFiles(shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
 
+    float scaleFactor = 1.0 / 299792458.0 * 1e2;
 
     Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
-    Cubesat6u.setBodyScale({0.001, 0.001, 0.001});
+    // by default is mm
+    float CubesatScale = 1 * scaleFactor;
+    Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
 
     Body Earth(this->context(), "../resources/models/earth.obj");
-    Earth.setBodyPosition({-5, 0, 0});
+    //6371000m to the light mseconds 299792458
+    float EarthScale = 6371 * 1e3 * scaleFactor;
+    Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
+
+    float EarthPos = 149.6 * 1e6 * 1e3 * scaleFactor;
+    Eigen::Vector3f EarthPosVec({EarthPos, 0, 0});
+    // Earth.setBodyPosition(EarthPosVec);
 
     Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
+    float SunScale = 695700 * 1e3 * scaleFactor;
+    Sun.setBodyScale({SunScale, SunScale, SunScale});
+
+    Body Neptune(this->context(), "../resources/models/Neptune/Neptune.obj");
+    float NeptuneScale = 24622 * 1e3 * scaleFactor;
+    Neptune.setBodyScale({NeptuneScale, NeptuneScale, NeptuneScale});
 
     world->bodies.emplace_back(Cubesat6u);
 
-    Cubesat6u.setBodyPosition({3, 0, 0});
-    world->bodies.emplace_back(Cubesat6u);
-
-    world->bodies.emplace_back(Earth);
-
+    // world->bodies.emplace_back(Earth);
     world->bodies.emplace_back(Sun);
+    // world->bodies.emplace_back(Neptune);
 
+
+    // cam.setTranslationCam(EarthPosVec);
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -76,7 +90,13 @@ void GlSimulation::paintGL()
 void GlSimulation::paintThreadfoo()
 {
     using namespace std::literals::chrono_literals;
-    float translation = 0.05;
+
+    Eigen::Vector3f translation {0, 0, 0};
+    const Eigen::Vector3f max {1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1};
+    Eigen::Vector3f target {0, 0, 0};
+    const float step = 0.15;
+    const float C = 0.05;
+
     float ang_rot = 0.5;
 
     while(isPaintThreadRun)
@@ -86,27 +106,33 @@ void GlSimulation::paintThreadfoo()
 
             if(PressedKey[Qt::Key_W] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, 0,  translation));
+                target[2] = max[2];
+                // cam.TranslateCam(Eigen::Vector3f(0, 0,  translation[2]));
             }
             if(PressedKey[Qt::Key_S] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, 0, -translation));
+                target[2] = -max[2];
+                // cam.TranslateCam(Eigen::Vector3f(0, 0, translation[2]));
             }
             if(PressedKey[Qt::Key_A] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(translation , 0, 0));
+                target[0] = max[0];
+                // cam.TranslateCam(Eigen::Vector3f(translation[0] , 0, 0));
             }
             if(PressedKey[Qt::Key_D] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(-translation, 0, 0.0));
+                target[0] = -max[0];
+                // cam.TranslateCam(Eigen::Vector3f(translation[0], 0, 0.0));
             }
             if(PressedKey[Qt::Key_Shift] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, translation, 0));
+                target[1] = max[1];
+                // cam.TranslateCam(Eigen::Vector3f(0, translation[1], 0));
             }
             if(PressedKey[Qt::Key_Space] == true)
             {
-                cam.TranslateCam(Eigen::Vector3f(0, -translation, 0));
+                target[1] = -max[1];
+                // cam.TranslateCam(Eigen::Vector3f(0, translation[1], 0));
             }
             if(PressedKey[Qt::Key_Q] == true)
             {
@@ -119,9 +145,13 @@ void GlSimulation::paintThreadfoo()
                 cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
         }
-        // float angle = 0.5 * M_PI / 180.0f;
-        // Eigen::Quaternionf q(cos(angle / 2), 0, 0, sin(angle / 2));
-        // world->bodies[1].rotateBody(q);
+        translation = (translation + target * C * step) / (1 + C * step);
+        target = {0, 0, 0};
+        std::cout << std::fixed;
+        std::cout.precision(10);
+        std::cout.width(20);
+        // std::cout << translation.transpose() << " " << cam.getTranslation().transpose() << "\r\n";
+        cam.TranslateCam(translation);
 
         update();
         std::this_thread::sleep_for(15ms);
