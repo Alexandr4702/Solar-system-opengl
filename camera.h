@@ -19,31 +19,34 @@ class Camera
 {
     public:
     void setAspectRatio(float ratio);
-    void setProjetionMatrix(Eigen::Matrix4f mat);
+    void setProjetionMatrix(Eigen::Matrix4d mat);
     void setProjetionMatrix(float fovY, float aspectRatio, float zNear, float zFar);
-    Eigen::Vector3f getTranslation() const;
-    Eigen::Quaternionf getRotation() const;
-    Eigen::Vector3f getScale() const;
-    void TranslateCam(Eigen::Vector3f transl);
-    void setTranslationCam(Eigen::Vector3f transl);
-    void rotateCam(Eigen::Quaternionf rot);
-    void rotateCam(Eigen::Vector2f& mouseCoord);
-    void setCamRotation(Eigen::Quaternionf& rot);
-    void ScaleCam(Eigen::Vector3f scal);
-    Eigen::Matrix4f getCameraMatrix() const;
+    Eigen::Vector3d getTranslation() const;
+    Eigen::Quaterniond getRotation() const;
+    Eigen::Vector3d getScale() const;
+    void TranslateCam(Eigen::Vector3d& transl);
+    void TranslateCam(Eigen::Vector3d&& transl);
+    void setTranslationCam(Eigen::Vector3d& transl);
+    void setTranslationCam(Eigen::Vector3d&& transl);
+    void rotateCam(Eigen::Quaterniond& rot);
+    void rotateCam(Eigen::Quaterniond&& rot);
+    void rotateCam(Eigen::Vector2d& mouseCoord);
+    void setCamRotation(Eigen::Quaterniond& rot);
+    void ScaleCam(Eigen::Vector3d& scal);
+    Eigen::Matrix4d getCameraMatrix() const;
     Eigen::Matrix4f getCameraProjectiveMatrix() const;
     void printCameraParam(std::ostream& out) const;
-    static Eigen::Matrix4f projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
-    void StartRotation(Eigen::Vector2f& mouseCoord);
+    static Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
+    void StartRotation(Eigen::Vector2d& mouseCoord);
 
     private:
-    Eigen::Vector3f translation{0, 0, 0};
-    Eigen::Quaternionf rotation = Eigen::Quaternionf(1, 0, 0, 0);
-    Eigen::Vector3f       scale {1.0f, 1.0f, 1.0f};
-    Eigen::Matrix4f projectiveMatrix = projective_matrix(60.f, 1.f, 1.f, 100.0f);
+    Eigen::Vector3d translation{0, 0, 0};
+    Eigen::Quaterniond rotation = Eigen::Quaterniond(1, 0, 0, 0);
+    Eigen::Vector3d       scale {1.0f, 1.0f, 1.0f};
+    Eigen::Matrix4d projectiveMatrix = projective_matrix(60.f, 1.f, 1.f, 100.0f);
 
-    Eigen::Quaternionf q0;
-    Eigen::Vector2f mouseCoord0;
+    Eigen::Quaterniond q0;
+    Eigen::Vector2d mouseCoord0;
 
     mutable std::mutex mtx;
 };

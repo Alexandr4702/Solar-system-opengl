@@ -32,12 +32,12 @@ void GlSimulation::initializeGL()
 
     createShaderProgramFromFiles(shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
 
-    float SizeScaleFactor = 1.0 / 299792458.0 * 1e2;
+    float SizeScaleFactor = 1.0 / 299792458.0 * 2e4;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 1e2;
 
     Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
     // by default is mm
-    float CubesatScale = 1 * SizeScaleFactor;
+    float CubesatScale = 1e-3 * SizeScaleFactor;
     Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
 
     Body Earth(this->context(), "../resources/models/earth.obj");
@@ -45,9 +45,9 @@ void GlSimulation::initializeGL()
     float EarthScale = 6371 * 1e3 * SizeScaleFactor;
     Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
 
-    float EarthPos = 149.6 * 1e6 * 1e3 * SizeScaleFactor;
-    Eigen::Vector3f EarthPosVec({EarthPos, 0, 0});
-    // Earth.setBodyPosition(EarthPosVec);
+    float EarthPos = 149.6 * 1e6 * 1e3 * DisctaneScaleFactor;
+    Eigen::Vector3d EarthPosVec({EarthPos, 0, 0});
+    Earth.setBodyPosition(EarthPosVec);
 
     Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
     float SunScale = 695700 * 1e3 * SizeScaleFactor;
@@ -59,12 +59,11 @@ void GlSimulation::initializeGL()
 
     world->bodies.emplace_back(Cubesat6u);
 
-    // world->bodies.emplace_back(Earth);
+    world->bodies.emplace_back(Earth);
     world->bodies.emplace_back(Sun);
-    // world->bodies.emplace_back(Neptune);
+    world->bodies.emplace_back(Neptune);
 
-
-    // cam.setTranslationCam(EarthPosVec);
+    cam.setTranslationCam({SunScale, 0, 0});
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -92,11 +91,11 @@ void GlSimulation::paintThreadfoo()
 {
     using namespace std::literals::chrono_literals;
 
-    Eigen::Vector3f translation {0, 0, 0};
-    const Eigen::Vector3f max {1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1};
-    Eigen::Vector3f target {0, 0, 0};
-    const float step = 0.15;
-    const float C = 0.05;
+    Eigen::Vector3d translation {0, 0, 0};
+    const Eigen::Vector3d max {1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1};
+    Eigen::Vector3d target {0, 0, 0};
+    const double step = 0.15;
+    const double C = 0.05;
 
     float ang_rot = 0.5;
 
@@ -138,12 +137,12 @@ void GlSimulation::paintThreadfoo()
             if(PressedKey[Qt::Key_Q] == true)
             {
                 float angle = ang_rot * M_PI / 180.0f;
-                cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
+                cam.rotateCam(Eigen::Quaterniond(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
             if(PressedKey[Qt::Key_E] == true)
             {
                 float angle = -ang_rot * M_PI / 180.0f;
-                cam.rotateCam(Eigen::Quaternionf(cos(angle / 2), 0, 0, sin(angle / 2)));
+                cam.rotateCam(Eigen::Quaterniond(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
         }
         translation = (translation + target * C * step) / (1 + C * step);
@@ -182,7 +181,7 @@ void GlSimulation::mouseMoveEvent(QMouseEvent *event)
     int key = event->buttons();
     if((key & Qt::RightButton)  == Qt::RightButton)
     {
-        Eigen::Vector2f vec(event->pos().x(), event->pos().y());
+        Eigen::Vector2d vec(event->pos().x(), event->pos().y());
         // vec.normalize();
         cam.rotateCam(vec);
     }
@@ -194,7 +193,7 @@ void GlSimulation::mousePressEvent(QMouseEvent *event)
     int key = event->buttons();
     if((key & Qt::RightButton)  == Qt::RightButton)
     {
-        Eigen::Vector2f vec = Eigen::Vector2f(event->pos().x(), event->pos().y());
+        Eigen::Vector2d vec = Eigen::Vector2d(event->pos().x(), event->pos().y());
         cam.StartRotation(vec);
     }
 }

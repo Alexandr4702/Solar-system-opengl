@@ -1,6 +1,6 @@
 #include "camera.h"
 
-void Camera::setProjetionMatrix(Eigen::Matrix4f mat)
+void Camera::setProjetionMatrix(Eigen::Matrix4d mat)
 {
     mtx.lock();
     projectiveMatrix = mat;
@@ -11,63 +11,82 @@ void Camera::setProjetionMatrix(float fovY, float aspectRatio, float zNear, floa
     setProjetionMatrix(projective_matrix(fovY, aspectRatio, zNear, zFar));
 }
 
-Eigen::Vector3f Camera::getTranslation() const
+Eigen::Vector3d Camera::getTranslation() const
 {
     mtx.lock();
-    Eigen::Vector3f ret = translation;
+    Eigen::Vector3d ret = translation;
     mtx.unlock();
     return ret;
 }
 
-Eigen::Quaternionf Camera::getRotation() const
+Eigen::Quaterniond Camera::getRotation() const
 {
     mtx.lock();
-    Eigen::Quaternionf ret = rotation;
+    Eigen::Quaterniond ret = rotation;
     mtx.unlock();
     return ret;
 }
 
-Eigen::Vector3f Camera::getScale() const
+Eigen::Vector3d Camera::getScale() const
 {
     mtx.lock();
-    Eigen::Vector3f ret = scale;
+    Eigen::Vector3d ret = scale;
     mtx.unlock();
     return ret;
 }
 
-void Camera::TranslateCam(Eigen::Vector3f transl)
+void Camera::TranslateCam(Eigen::Vector3d& transl)
 {
     std::scoped_lock guard(mtx);
     translation += rotation.inverse() * transl;
 }
 
-void Camera::setTranslationCam(Eigen::Vector3f transl)
+void Camera::TranslateCam(Eigen::Vector3d&& transl)
+{
+    std::scoped_lock guard(mtx);
+    translation += rotation.inverse() * transl;
+}
+
+void Camera::setTranslationCam(Eigen::Vector3d& transl)
 {
     std::scoped_lock guard(mtx);
     translation = -transl;
 }
 
-void Camera::rotateCam(Eigen::Quaternionf rot)
+void Camera::setTranslationCam(Eigen::Vector3d&& transl)
+{
+    std::scoped_lock guard(mtx);
+    translation = -transl;
+}
+
+void Camera::rotateCam(Eigen::Quaterniond& rot)
 {
     std::scoped_lock guard(mtx);
     rotation = rot * rotation;
 }
-void Camera::setCamRotation(Eigen::Quaternionf& rot)
+
+void Camera::rotateCam(Eigen::Quaterniond&& rot)
+{
+    std::scoped_lock guard(mtx);
+    rotation = rot * rotation;
+}
+
+void Camera::setCamRotation(Eigen::Quaterniond& rot)
 {
     if(rot.coeffs().hasNaN())
         return;
     std::scoped_lock guard(mtx);
     rotation = rot;
 }
-void Camera::ScaleCam(Eigen::Vector3f scal)
+void Camera::ScaleCam(Eigen::Vector3d& scal)
 {
     std::scoped_lock guard(mtx);
     scale += scal;
 }
-Eigen::Matrix4f Camera::getCameraMatrix() const
+Eigen::Matrix4d Camera::getCameraMatrix() const
 {
     std::scoped_lock guard(mtx);
-    Eigen::Affine3f CamMatrix;
+    Eigen::Affine3d CamMatrix;
     CamMatrix.setIdentity();
     CamMatrix.scale(scale);
     CamMatrix.rotate(rotation);
@@ -78,7 +97,7 @@ Eigen::Matrix4f Camera::getCameraMatrix() const
 
 Eigen::Matrix4f Camera::getCameraProjectiveMatrix() const
 {
-    return projectiveMatrix * getCameraMatrix();
+    return (projectiveMatrix * getCameraMatrix()).cast <float>();
 }
 
 void Camera::printCameraParam(std::ostream& out) const
@@ -87,7 +106,7 @@ void Camera::printCameraParam(std::ostream& out) const
     out << rotation << "\r\n";
 }
 
-Eigen::Matrix4f Camera::projective_matrix(float fovY, float aspectRatio, float zNear, float zFar)
+Eigen::Matrix4d Camera::projective_matrix(float fovY, float aspectRatio, float zNear, float zFar)
 {
     float yScale = 1 / tan(fovY * M_PI / 360.0f);
     float xScale = yScale / aspectRatio;
@@ -95,7 +114,7 @@ Eigen::Matrix4f Camera::projective_matrix(float fovY, float aspectRatio, float z
     // float yScale = 1;
     // float xScale = 1;
 
-    Eigen::Matrix4f pmat;
+    Eigen::Matrix4d pmat;
     pmat << xScale, 0, 0, 0,
             0, yScale, 0, 0,
             0, 0, -(zFar+zNear)/(zFar-zNear), -2*zNear*zFar/(zFar-zNear),
@@ -103,30 +122,32 @@ Eigen::Matrix4f Camera::projective_matrix(float fovY, float aspectRatio, float z
     return pmat;
 }
 
-void Camera::StartRotation(Eigen::Vector2f& mouseCoord)
+void Camera::StartRotation(Eigen::Vector2d& mouseCoord)
 {
     std::scoped_lock guard(mtx);
     mouseCoord0 = mouseCoord;
     q0 = rotation;
 }
 
-void Camera::rotateCam(Eigen::Vector2f& mouseCoord)
+void Camera::rotateCam(Eigen::Vector2d& mouseCoord)
 {
     std::scoped_lock guard(mtx);
-    Eigen::Vector2f diff = mouseCoord - mouseCoord0;
+    Eigen::Vector2d diff = mouseCoord - mouseCoord0;
 
     diff *= 0.001;
 
     float w_rot = sqrt(1- diff.x()*diff.x() - diff.y()*diff.y());
-    Eigen::Quaternionf q (w_rot, diff.y(), diff.x(), 0);
+    Eigen::Quaterniond q (w_rot, diff.y(), diff.x(), 0);
     q = q * q0;
 
     if(q.coeffs().hasNaN())
         return;
     rotation = q;
 }
+
 void Camera::setAspectRatio(float ratio)
 {
     std::scoped_lock guard(mtx);
-    projectiveMatrix = projective_matrix(60.f, ratio, 1e-5f, 1e3f);
+    projectiveMatrix = projective_matrix(30.f, ratio, 1e1f, 4e5f);
+    std::cout << projectiveMatrix << "\r\n";
 }
