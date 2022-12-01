@@ -32,13 +32,9 @@ void GlSimulation::initializeGL()
 
     createShaderProgramFromFiles(shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
 
-    float SizeScaleFactor = 1.0 / 299792458.0 * 2e4;
-    float DisctaneScaleFactor = 1.0 / 299792458.0 * 1e2;
-
-    Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
-    // by default is mm
-    float CubesatScale = 1e-3 * SizeScaleFactor;
-    Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
+    float SizeScaleFactor = 1.0 / 299792458.0 * 1e0;
+    float DisctaneScaleFactor = 1.0 / 299792458.0 * 1e-1;
+    float BodyScaleFactor = 1.0 / 299792458.0 * 1e6;
 
     Body Earth(this->context(), "../resources/models/earth.obj");
     //6371000m to the light mseconds 299792458
@@ -57,13 +53,19 @@ void GlSimulation::initializeGL()
     float NeptuneScale = 24622 * 1e3 * SizeScaleFactor;
     Neptune.setBodyScale({NeptuneScale, NeptuneScale, NeptuneScale});
 
+    Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
+    // by default is mm
+    float CubesatScale = 1e-3 * BodyScaleFactor;
+    Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
+    Cubesat6u.setBodyPosition(EarthPosVec);
+
     world->bodies.emplace_back(Cubesat6u);
 
     world->bodies.emplace_back(Earth);
     world->bodies.emplace_back(Sun);
     world->bodies.emplace_back(Neptune);
 
-    cam.setTranslationCam({SunScale, 0, 0});
+    // cam.setTranslationCam({EarthPos, 0, 0});
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -92,7 +94,7 @@ void GlSimulation::paintThreadfoo()
     using namespace std::literals::chrono_literals;
 
     Eigen::Vector3d translation {0, 0, 0};
-    const Eigen::Vector3d max {1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1, 1e2 / 299792458.0 * 1e1};
+    const Eigen::Vector3d max {1e5 / 299792458.0 * 1e1, 1e5 / 299792458.0 * 1e1, 1e5 / 299792458.0 * 1e1};
     Eigen::Vector3d target {0, 0, 0};
     const double step = 0.15;
     const double C = 0.05;
