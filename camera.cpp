@@ -148,6 +148,6 @@ void Camera::rotateCam(Eigen::Vector2d& mouseCoord)
 void Camera::setAspectRatio(float ratio)
 {
     std::scoped_lock guard(mtx);
-    projectiveMatrix = projective_matrix(30.f, ratio, 1e-3f, 4e4f);
+    projectiveMatrix = projective_matrix(60.f, ratio, 1e-3f, 4e4f);
     std::cout << projectiveMatrix << "\r\n";
 }
