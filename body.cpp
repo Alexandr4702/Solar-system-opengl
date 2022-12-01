@@ -152,12 +152,20 @@ void Body::setBodyScale(Eigen::Vector3d &&scale)
     this->scale = scale;
 }
 
+Eigen::Vector3d Body::getBodyPosition() const
+{
+    std::scoped_lock guard(mtx);
+    Eigen::Vector3d ret(postition);
+    return ret;
+}
+
 Eigen::Vector3d Body::getBodyTranslationMetr() const
 {
     std::scoped_lock guard(mtx);
     Eigen::Vector3d ret(postition);
     return ret * positionToMetr;
 }
+
 
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
