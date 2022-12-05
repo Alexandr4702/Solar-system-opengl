@@ -22,7 +22,7 @@ void main()
     gl_Position = vp_matrix * worldPos;
 
     to_fs.v_texcoord = texture_coordinate;
-    to_fs.normal     = normal;
+    to_fs.normal     = (m_matrix * vec4(normal, 0)).xyz;
     to_fs.position   = worldPos.xyz;
     // color = vec4( 0, 0, 1.0, 1.0);//vec4(clamp(gl_Position[0],0.1,1.0),clamp(gl_Position[1],0.1,1.0),clamp(gl_Position[2],0.1,1.0),1);
 }
