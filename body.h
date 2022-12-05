@@ -197,7 +197,7 @@ public:
      Body& operator=(const Body&);
      ~Body();
      void draw(QOpenGLShaderProgram& program);
-     void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam);
+     void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam, Eigen::Vector3d& camPos);
      void update();
 
      void setBodyPosition(Eigen::Vector3d&);

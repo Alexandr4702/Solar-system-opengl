@@ -93,7 +93,7 @@ void Body::draw(QOpenGLShaderProgram& program)
         mesh.draw(program);
 }
 
-void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam)
+void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam, Eigen::Vector3d& camPos)
 {
     Eigen::Matrix4f m_matrix = getBodyMatrix().transpose();
     QMatrix4x4 m_matrixQt(m_matrix.data());
@@ -102,6 +102,9 @@ void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam)
     Eigen::Matrix4f vp_matrix = matrixCam.transpose();
     QMatrix4x4 vp_matrixQt(vp_matrix.data());
     program.setUniformValue("vp_matrix", vp_matrixQt);
+
+    QVector3D camPosQt(camPos.x(), camPos.y(), camPos.z());
+    program.setUniformValue("camPosition", camPosQt);
 
     draw(program);
 }

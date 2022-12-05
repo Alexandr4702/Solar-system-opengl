@@ -49,7 +49,7 @@ void main()
     texture_properties.ambient = temp.xyz * 0.1;
     texture_properties.diffuse = temp.xyz * 0.1;
     texture_properties.specular = temp.xyz * 0.8;
-    texture_properties.shininess = 1024;
+    texture_properties.shininess = 8;
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.position, lightColor, camPosition, texture_properties);
 }
