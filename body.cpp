@@ -373,7 +373,7 @@ void Mesh::draw(QOpenGLShaderProgram &program)
 
     int normal_location = 2;
     program.enableAttributeArray(normal_location);
-    program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 2, sizeof(vertices[0]));
+    program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 3, sizeof(vertices[0]));
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 }
