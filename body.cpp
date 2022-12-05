@@ -95,12 +95,13 @@ void Body::draw(QOpenGLShaderProgram& program)
 
 void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& matrixCam)
 {
-    // mvp[0][0];
+    Eigen::Matrix4f m_matrix = getBodyMatrix().transpose();
+    QMatrix4x4 m_matrixQt(m_matrix.data());
+    program.setUniformValue("m_matrix", m_matrixQt);
 
-    Eigen::Matrix4f mvpMat = (matrixCam * getBodyMatrix()).transpose();
-
-    QMatrix4x4 matrix(mvpMat.data());
-    program.setUniformValue("mvp_matrix", matrix);
+    Eigen::Matrix4f vp_matrix = matrixCam.transpose();
+    QMatrix4x4 vp_matrixQt(vp_matrix.data());
+    program.setUniformValue("vp_matrix", vp_matrixQt);
 
     draw(program);
 }

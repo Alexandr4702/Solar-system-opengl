@@ -118,10 +118,11 @@ void GlSimulation::paintThreadfoo()
     using namespace std::literals::chrono_literals;
 
     Eigen::Vector3d translation {0, 0, 0};
-    const Eigen::Vector3d max {1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1};
+    Eigen::Vector3d max {1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1};
+    max *= (1.0 / 15.0);
     Eigen::Vector3d target {0, 0, 0};
     const double step = 0.15;
-    const double C = 0.05;
+    const double C = 0.1;
 
     float ang_rot = 0.5;
 
