@@ -34,7 +34,7 @@ vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 v
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = lightColor * (spec * material.specular);
 
-    vec3 result = ambient + diffuse;
+    vec3 result = ambient + diffuse + specular;
     vec4 FragColor = vec4(result, 1.0);
     return FragColor;
 }
@@ -46,9 +46,10 @@ void main()
     vec3 CameraPos = {0, 0, 0};
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
-    texture_properties.ambient = temp.xyz * 0.4;
-    texture_properties.diffuse = temp.xyz;
-    texture_properties.specular = temp.xyz;
+    texture_properties.ambient = temp.xyz * 0.1;
+    texture_properties.diffuse = temp.xyz * 0.1;
+    texture_properties.specular = temp.xyz * 0.4;
+    texture_properties.shininess = 64;
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.position, lightColor, CameraPos, texture_properties);
 

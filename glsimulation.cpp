@@ -34,7 +34,7 @@ void GlSimulation::initializeGL()
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
-    float BodyScaleFactor = 1.0 / 299792458.0 * 1e5;
+    float BodyScaleFactor = 1.0 / 299792458.0 * 1e7;
 
     Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
     float SunScale = 695700 * 1e3 * PlanetScaleFactor;
@@ -119,7 +119,7 @@ void GlSimulation::paintThreadfoo()
 
     Eigen::Vector3d translation {0, 0, 0};
     Eigen::Vector3d max {1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1};
-    max *= (1.0 / 15.0);
+    max *= (1.0 / 150.0);
     Eigen::Vector3d target {0, 0, 0};
     const double step = 0.15;
     const double C = 0.1;
