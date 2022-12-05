@@ -47,11 +47,12 @@ void main()
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * 0.1;
-    texture_properties.diffuse = temp.xyz * 0.1;
+    texture_properties.diffuse = temp.xyz * 0.0;
     texture_properties.specular = temp.xyz * 0.8;
     texture_properties.shininess = 8;
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.position, lightColor, camPosition, texture_properties);
+    // fragColor = vec4(camPosition, 1);
 }
 //! [0]
 

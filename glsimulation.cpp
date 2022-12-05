@@ -107,7 +107,7 @@ void GlSimulation::paintGL()
 
     Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix();
 
-    Eigen::Vector3d camPos = cam.getTranslation();
+    Eigen::Vector3d camPos = -cam.getTranslation();
 
     for(auto& body: world->bodies)
     {
@@ -122,6 +122,7 @@ void GlSimulation::paintThreadfoo()
     Eigen::Vector3d translation {0, 0, 0};
     Eigen::Vector3d max {1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1, 1e7 / 299792458.0 * 1e1};
     max *= (1.0 / 150.0);
+    // max *= 10;
     Eigen::Vector3d target {0, 0, 0};
     const double step = 0.15;
     const double C = 0.1;

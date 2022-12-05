@@ -46,7 +46,6 @@ private:
     std::thread paintThreadHandle;
     bool isPaintThreadRun = true;
 
-
     std::unordered_map<int, bool> PressedKey;
     std::mutex pressedKeyMutex;
 };
