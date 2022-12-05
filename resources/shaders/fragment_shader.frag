@@ -16,6 +16,7 @@ in struct data_to_pass
 
 uniform sampler2D textures;
 out vec4 fragColor;
+uniform vec3 camPosition;
 
 vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
 {
@@ -43,16 +44,14 @@ void main()
 {
     vec3 LightPosition = {0, 0, 0};
     vec3 lightColor = {1, 1, 1};
-    vec3 CameraPos = {0, 0, 0};
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * 0.1;
     texture_properties.diffuse = temp.xyz * 0.1;
-    texture_properties.specular = temp.xyz * 0.4;
-    texture_properties.shininess = 64;
+    texture_properties.specular = temp.xyz * 0.8;
+    texture_properties.shininess = 1024;
 
-    fragColor = calcLight(to_fs.normal, LightPosition, to_fs.position, lightColor, CameraPos, texture_properties);
-
+    fragColor = calcLight(to_fs.normal, LightPosition, to_fs.position, lightColor, camPosition, texture_properties);
 }
 //! [0]
 
