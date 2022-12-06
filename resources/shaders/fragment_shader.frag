@@ -44,6 +44,27 @@ vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 
     return FragColor;
 }
 
+vec4 PhongBelingLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
+{
+    // ambient
+    vec3 ambient = lightColor;
+
+    // diffuse
+    vec3 norm = normalize(Normal);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = lightColor * diff;
+
+    // specular
+    vec3 viewDir    = normalize(viewPos - FragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
+    vec3 specular = lightColor * spec;
+
+    vec3 result = ambient * material.ambient + diffuse * material.diffuse + specular * material.specular;
+    vec4 FragColor = vec4(result, 1.0);
+    return FragColor;
+}
+
 vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
 {
     vec3 lightDir = normalize(lightPos - FragPos);
