@@ -107,7 +107,7 @@ void GlSimulation::paintGL()
 
     Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix();
 
-    Eigen::Vector3d camPos = -cam.getTranslation();
+    Eigen::Vector3d camPos = cam.getTranslation();
 
     for(auto& body: world->bodies)
     {

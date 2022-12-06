@@ -14,7 +14,7 @@ void Camera::setProjetionMatrix(float fovY, float aspectRatio, float zNear, floa
 Eigen::Vector3d Camera::getTranslation() const
 {
     mtx.lock();
-    Eigen::Vector3d ret = translation;
+    Eigen::Vector3d ret = -translation;
     mtx.unlock();
     return ret;
 }
