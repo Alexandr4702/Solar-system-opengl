@@ -179,6 +179,11 @@ class Mesh : public QOpenGLFunctions
 
      std::shared_ptr<QOpenGLTexture> texture = nullptr;
 
+     Eigen::Vector3f ambient_texture;
+     Eigen::Vector3f diffuse_texture;
+     Eigen::Vector3f specular_texture;
+     float shininess;
+
      private:
      QOpenGLContext *ctx;
 };

@@ -81,7 +81,7 @@ void GlSimulation::initializeGL()
     Eigen::Vector3d Cubesat6uPosVec = Eigen::Vector3d(500 * 1e3, 0, 0) * DisctaneScaleFactor + EarthPosVec + Eigen::Vector3d(EarthScale, 0, 0);
     Cubesat6u.setBodyPosition(Cubesat6uPosVec);
 
-    world->bodies.emplace_back(Cubesat6u);
+    // world->bodies.emplace_back(Cubesat6u);
 
     world->bodies.emplace_back(Sun);
     world->bodies.emplace_back(Mercury);

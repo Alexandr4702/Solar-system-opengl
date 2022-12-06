@@ -288,6 +288,11 @@ bool Body::ImportModel(std::string pFile)
         mesh.indexBuf->bind();
         mesh.indexBuf->allocate(mesh.indices.data(), mesh.indices.size() * sizeof(mesh.indices[0]));
 
+        mesh.ambient_texture;
+        mesh.diffuse_texture;
+        mesh.specular_texture;
+        mesh.shininess;
+
         meshes.push_back(std::move(mesh));
     }
 
@@ -377,6 +382,18 @@ void Mesh::draw(QOpenGLShaderProgram &program)
     int normal_location = 2;
     program.enableAttributeArray(normal_location);
     program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 3, sizeof(vertices[0]));
+
+    QVector3D ambient_texture_QT (ambient_texture.x(), ambient_texture.y(), ambient_texture.z());
+    program.setUniformValue("ambient_texture", ambient_texture_QT);
+
+    QVector3D diffuse_texture_QT(diffuse_texture.x(), diffuse_texture.y(), diffuse_texture.z());
+    program.setUniformValue("diffuse_texture", diffuse_texture_QT);
+
+    QVector3D specular_texture_QT(specular_texture.x(), specular_texture.y(), specular_texture.z());
+    program.setUniformValue("specular_texture", specular_texture_QT);
+
+    float shininess = this->shininess;
+    program.setUniformValue("shininess", shininess);
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 }

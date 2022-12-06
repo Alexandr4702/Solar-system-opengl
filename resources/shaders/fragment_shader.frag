@@ -18,6 +18,11 @@ uniform sampler2D textures;
 out vec4 fragColor;
 uniform vec3 camPosition;
 
+uniform vec3 ambient_texture;
+uniform vec3 diffuse_texture;
+uniform vec3 specular_texture;
+uniform float shininess;
+
 vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
 {
     // ambient
