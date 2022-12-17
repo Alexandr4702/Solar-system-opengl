@@ -11,7 +11,9 @@ in struct data_to_pass
 {
     vec2 v_texcoord;
     vec3 normal;
-    vec3 position;
+    vec4 positionWorld;
+    vec4 positionCam;
+    vec4 posProjected;
 } to_fs;
 
 uniform sampler2D textures;
@@ -44,7 +46,7 @@ vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 
     return FragColor;
 }
 
-vec4 PhongBelingLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
+vec4 BllinPhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
 {
     // ambient
     vec3 ambient = lightColor;
@@ -82,8 +84,8 @@ void main()
     texture_properties.specular = temp.xyz * 0.45;
     texture_properties.shininess = 8;
 
-    fragColor = calcLight(to_fs.normal, LightPosition, to_fs.position, lightColor, camPosition, texture_properties);
-    // fragColor = vec4(camPosition, 1);
+    fragColor = calcLight(to_fs.normal, LightPosition, to_fs.positionWorld.xyz, lightColor, camPosition, texture_properties);
+    // fragColor = vec4(to_fs.posProjected.z, to_fs.posProjected.z, to_fs.posProjected.z, 1);
 }
 //! [0]
 

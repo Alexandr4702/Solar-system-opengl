@@ -81,7 +81,7 @@ void GlSimulation::initializeGL()
     Eigen::Vector3d Cubesat6uPosVec = Eigen::Vector3d(500 * 1e3, 0, 0) * DisctaneScaleFactor + EarthPosVec + Eigen::Vector3d(EarthScale, 0, 0);
     Cubesat6u.setBodyPosition(Cubesat6uPosVec);
 
-    // world->bodies.emplace_back(Cubesat6u);
+    world->bodies.emplace_back(Cubesat6u);
 
     world->bodies.emplace_back(Sun);
     world->bodies.emplace_back(Mercury);
@@ -105,13 +105,14 @@ void GlSimulation::paintGL()
 
     shaderProgramm.bind();
 
-    Eigen::Matrix4f mvp = cam.getCameraProjectiveMatrix();
+    Eigen::Matrix4f v = cam.getCameraMatrix().cast <float>();
+    Eigen::Matrix4f p = cam.getProjetionMatrix().cast <float>();
 
     Eigen::Vector3d camPos = cam.getTranslation();
 
     for(auto& body: world->bodies)
     {
-        body.draw(shaderProgramm, mvp, camPos);
+        body.draw(shaderProgramm, v, p, camPos);
     }
 }
 

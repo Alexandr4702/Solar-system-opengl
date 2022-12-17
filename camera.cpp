@@ -11,6 +11,12 @@ void Camera::setProjetionMatrix(float fovY, float aspectRatio, float zNear, floa
     setProjetionMatrix(projective_matrix(fovY, aspectRatio, zNear, zFar));
 }
 
+Eigen::Matrix4d Camera::getProjetionMatrix() const
+{
+    std::scoped_lock guard(mtx);
+    return projectiveMatrix;
+}
+
 Eigen::Vector3d Camera::getTranslation() const
 {
     mtx.lock();

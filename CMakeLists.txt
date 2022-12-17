@@ -25,7 +25,7 @@ set(PROJECT_SOURCES
         camera.cpp
 )
 
-include_directories('.' './eigen')
+include_directories(./eigen)
 
 set(RESOURCE_FILES
     resources/*
