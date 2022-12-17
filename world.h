@@ -10,7 +10,7 @@ class World
 {
 public:
     World();
-    std::vector<Body> bodies;
+    std::vector<Body> _bodies;
 };
 
 #endif // WORLD_H

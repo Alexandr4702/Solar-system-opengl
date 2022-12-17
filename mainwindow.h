@@ -9,8 +9,8 @@ class Mainwindow:public QWidget
 {
 public:
     Mainwindow();
-    float simulationScreenRatio = 0.7;
-    std::shared_ptr <GlSimulation> simulation;
+    float _simulationScreenRatio = 0.7;
+    std::shared_ptr <GlSimulation> _simulation;
 protected:
    void resizeEvent(QResizeEvent *event) override;
 };

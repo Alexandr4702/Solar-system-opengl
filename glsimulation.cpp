@@ -4,17 +4,17 @@
 
 GlSimulation::GlSimulation(QWidget *parent): QOpenGLWidget(parent)
 {
-    world = std::make_shared <World> ();
+    _world = std::make_shared <World> ();
     {
-        std::scoped_lock(pressedKeyMutex);
-        PressedKey[Qt::Key_W] = false;
-        PressedKey[Qt::Key_S] = false;
-        PressedKey[Qt::Key_A] = false;
-        PressedKey[Qt::Key_D] = false;
-        PressedKey[Qt::Key_Shift] = false;
-        PressedKey[Qt::Key_Space] = false;
-        PressedKey[Qt::Key_Q] = false;
-        PressedKey[Qt::Key_E] = false;
+        std::scoped_lock(_pressedKeyMutex);
+        _PressedKey[Qt::Key_W] = false;
+        _PressedKey[Qt::Key_S] = false;
+        _PressedKey[Qt::Key_A] = false;
+        _PressedKey[Qt::Key_D] = false;
+        _PressedKey[Qt::Key_Shift] = false;
+        _PressedKey[Qt::Key_Space] = false;
+        _PressedKey[Qt::Key_Q] = false;
+        _PressedKey[Qt::Key_E] = false;
     }
     grabKeyboard();
     grabMouse();
@@ -22,15 +22,15 @@ GlSimulation::GlSimulation(QWidget *parent): QOpenGLWidget(parent)
 
 GlSimulation::~GlSimulation()
 {
-    isPaintThreadRun = false;
-    paintThreadHandle.join();
+    _isPaintThreadRun = false;
+    _paintThreadHandle.join();
 }
 
 void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    createShaderProgramFromFiles(shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
+    createShaderProgramFromFiles(_shaderProgramm, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
@@ -81,38 +81,38 @@ void GlSimulation::initializeGL()
     Eigen::Vector3d Cubesat6uPosVec = Eigen::Vector3d(500 * 1e3, 0, 0) * DisctaneScaleFactor + EarthPosVec + Eigen::Vector3d(EarthScale, 0, 0);
     Cubesat6u.setBodyPosition(Cubesat6uPosVec);
 
-    world->bodies.emplace_back(Cubesat6u);
+    _world->_bodies.emplace_back(Cubesat6u);
 
-    world->bodies.emplace_back(Sun);
-    world->bodies.emplace_back(Mercury);
-    world->bodies.emplace_back(Earth);
-    world->bodies.emplace_back(Moon);
-    world->bodies.emplace_back(Neptune);
+    _world->_bodies.emplace_back(Sun);
+    _world->_bodies.emplace_back(Mercury);
+    _world->_bodies.emplace_back(Earth);
+    _world->_bodies.emplace_back(Moon);
+    _world->_bodies.emplace_back(Neptune);
 
-    cam.setTranslationCam(Earth.getBodyPosition());
+    _cam.setTranslationCam(Earth.getBodyPosition());
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    paintThreadHandle = std::thread(&GlSimulation::paintThreadfoo, this);
+    _paintThreadHandle = std::thread(&GlSimulation::paintThreadfoo, this);
 }
 
 void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shaderProgramm.bind();
+    _shaderProgramm.bind();
 
-    Eigen::Matrix4f v = cam.getCameraMatrix().cast <float>();
-    Eigen::Matrix4f p = cam.getProjetionMatrix().cast <float>();
+    Eigen::Matrix4f v = _cam.getCameraMatrix().cast <float>();
+    Eigen::Matrix4f p = _cam.getProjetionMatrix().cast <float>();
 
-    Eigen::Vector3d camPos = cam.getTranslation();
+    Eigen::Vector3d camPos = _cam.getTranslation();
 
-    for(auto& body: world->bodies)
+    for(auto& body: _world->_bodies)
     {
-        body.draw(shaderProgramm, v, p, camPos);
+        body.draw(_shaderProgramm, v, p, camPos);
     }
 }
 
@@ -130,50 +130,50 @@ void GlSimulation::paintThreadfoo()
 
     float ang_rot = 0.5;
 
-    while(isPaintThreadRun)
+    while(_isPaintThreadRun)
     {
         {
-            std::scoped_lock(pressedKeyMutex);
+            std::scoped_lock(_pressedKeyMutex);
 
-            if(PressedKey[Qt::Key_W] == true)
+            if(_PressedKey[Qt::Key_W] == true)
             {
                 target[2] = max[2];
                 // cam.TranslateCam(Eigen::Vector3f(0, 0,  translation[2]));
             }
-            if(PressedKey[Qt::Key_S] == true)
+            if(_PressedKey[Qt::Key_S] == true)
             {
                 target[2] = -max[2];
                 // cam.TranslateCam(Eigen::Vector3f(0, 0, translation[2]));
             }
-            if(PressedKey[Qt::Key_A] == true)
+            if(_PressedKey[Qt::Key_A] == true)
             {
                 target[0] = max[0];
                 // cam.TranslateCam(Eigen::Vector3f(translation[0] , 0, 0));
             }
-            if(PressedKey[Qt::Key_D] == true)
+            if(_PressedKey[Qt::Key_D] == true)
             {
                 target[0] = -max[0];
                 // cam.TranslateCam(Eigen::Vector3f(translation[0], 0, 0.0));
             }
-            if(PressedKey[Qt::Key_Shift] == true)
+            if(_PressedKey[Qt::Key_Shift] == true)
             {
                 target[1] = max[1];
                 // cam.TranslateCam(Eigen::Vector3f(0, translation[1], 0));
             }
-            if(PressedKey[Qt::Key_Space] == true)
+            if(_PressedKey[Qt::Key_Space] == true)
             {
                 target[1] = -max[1];
                 // cam.TranslateCam(Eigen::Vector3f(0, translation[1], 0));
             }
-            if(PressedKey[Qt::Key_Q] == true)
+            if(_PressedKey[Qt::Key_Q] == true)
             {
                 float angle = ang_rot * M_PI / 180.0f;
-                cam.rotateCam(Eigen::Quaterniond(cos(angle / 2), 0, 0, sin(angle / 2)));
+                _cam.rotateCam(Eigen::Quaterniond(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
-            if(PressedKey[Qt::Key_E] == true)
+            if(_PressedKey[Qt::Key_E] == true)
             {
                 float angle = -ang_rot * M_PI / 180.0f;
-                cam.rotateCam(Eigen::Quaterniond(cos(angle / 2), 0, 0, sin(angle / 2)));
+                _cam.rotateCam(Eigen::Quaterniond(cos(angle / 2), 0, 0, sin(angle / 2)));
             }
         }
         translation = (translation + target * C * step) / (1 + C * step);
@@ -182,7 +182,7 @@ void GlSimulation::paintThreadfoo()
         std::cout.precision(10);
         std::cout.width(20);
         // std::cout << translation.transpose() << " " << cam.getTranslation().transpose() << "\r\n";
-        cam.TranslateCam(translation);
+        _cam.TranslateCam(translation);
 
         update();
         std::this_thread::sleep_for(15ms);
@@ -193,18 +193,18 @@ void GlSimulation::keyPressEvent(QKeyEvent *event)
 {
     if(event->isAutoRepeat())
         return;
-    std::scoped_lock(pressedKeyMutex);
+    std::scoped_lock(_pressedKeyMutex);
     int key = event->key();
-    PressedKey[key] = true;
+    _PressedKey[key] = true;
 }
 
 void GlSimulation::keyReleaseEvent(QKeyEvent *event)
 {
     if(event->isAutoRepeat())
          return;
-    std::scoped_lock(pressedKeyMutex);
+    std::scoped_lock(_pressedKeyMutex);
     int key = event->key();
-    PressedKey[key] = false;
+    _PressedKey[key] = false;
 }
 
 void GlSimulation::mouseMoveEvent(QMouseEvent *event)
@@ -214,7 +214,7 @@ void GlSimulation::mouseMoveEvent(QMouseEvent *event)
     {
         Eigen::Vector2d vec(event->pos().x(), event->pos().y());
         // vec.normalize();
-        cam.rotateCam(vec);
+        _cam.rotateCam(vec);
     }
 }
 
@@ -225,7 +225,7 @@ void GlSimulation::mousePressEvent(QMouseEvent *event)
     if((key & Qt::RightButton)  == Qt::RightButton)
     {
         Eigen::Vector2d vec = Eigen::Vector2d(event->pos().x(), event->pos().y());
-        cam.StartRotation(vec);
+        _cam.StartRotation(vec);
     }
 }
 
@@ -272,6 +272,6 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
 
 void GlSimulation::resizeGL(int width, int height)
 {
-    cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
+    _cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
     glViewport(0, 0, GLint(width), GLint(height));
 }

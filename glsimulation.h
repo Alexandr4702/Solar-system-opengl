@@ -40,14 +40,14 @@ private:
     void drawThread();
     // void drawCube();
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
-    QOpenGLShaderProgram shaderProgramm;
-    std::shared_ptr<World> world;
-    Camera cam;
-    std::thread paintThreadHandle;
-    bool isPaintThreadRun = true;
+    QOpenGLShaderProgram _shaderProgramm;
+    std::shared_ptr<World> _world;
+    Camera _cam;
+    std::thread _paintThreadHandle;
+    bool _isPaintThreadRun = true;
 
-    std::unordered_map<int, bool> PressedKey;
-    std::mutex pressedKeyMutex;
+    std::unordered_map<int, bool> _PressedKey;
+    std::mutex _pressedKeyMutex;
 };
 
 #endif // GLSIMULATION_H
