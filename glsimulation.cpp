@@ -22,7 +22,7 @@ GlSimulation::GlSimulation(QWidget *parent): QOpenGLWidget(parent)
 
 GlSimulation::~GlSimulation()
 {
-    _isPaintThreadRun = false;
+    _isPaintThreadRun.store(false, std::memory_order_relaxed);
     _paintThreadHandle.join();
 }
 
@@ -131,7 +131,7 @@ void GlSimulation::paintThreadfoo()
 
     float ang_rot = 0.5;
 
-    while(_isPaintThreadRun)
+    while(_isPaintThreadRun.load(std::memory_order_relaxed))
     {
         {
             std::scoped_lock(_pressedKeyMutex);
