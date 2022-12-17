@@ -31,7 +31,7 @@ void GlSimulation::initializeGL()
     initializeOpenGLFunctions();
 
     createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
-    createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
+    createShaderProgramFromFiles(_shaderProgrammShadowMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
