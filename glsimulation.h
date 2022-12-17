@@ -5,6 +5,8 @@
 #include <QtOpenGL>
 #include <QOpenGLFunctions>
 
+#include <QOpenGLFramebufferObject>
+
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
@@ -41,7 +43,9 @@ private:
     // void drawCube();
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
     QOpenGLShaderProgram _shaderProgrammBody;
+
     QOpenGLShaderProgram _shaderProgrammShadowMap;
+    std::unique_ptr<QOpenGLFramebufferObject> _shadowMapFrameBuffer;
 
     std::shared_ptr<World> _world;
     Camera _cam;

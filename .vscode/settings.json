@@ -78,6 +78,7 @@
         "variant": "cpp",
         "klusupport": "cpp",
         "*.ipp": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "qopenglframebufferobject": "cpp"
     }
 }
