@@ -30,8 +30,10 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
+    _shaderMapTechPtr = std::make_unique<ShadowMapTech>(context());
+
     createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
-    createShaderProgramFromFiles(_shaderProgrammShadowMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
+    createShaderProgramFromFiles(_shaderMapTechPtr->shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
@@ -40,7 +42,6 @@ void GlSimulation::initializeGL()
     Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
     float SunScale = 695700 * 1e3 * PlanetScaleFactor;
     Sun.setBodyScale({SunScale, SunScale, SunScale});
-
 
     Body Mercury(this->context(), "../resources/models/Mercury/Mercury.obj");
     float MercuryScale = 2439.7 * 1e3 * PlanetScaleFactor;
@@ -104,13 +105,11 @@ void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    _shaderProgrammBody.bind();
-
     Eigen::Matrix4f v = _cam.getCameraMatrix().cast <float>();
     Eigen::Matrix4f p = _cam.getProjetionMatrix().cast <float>();
-
     Eigen::Vector3d camPos = _cam.getTranslation();
 
+    _shaderProgrammBody.bind();
     for(auto& body: _world->_bodies)
     {
         body.draw(_shaderProgrammBody, v, p, camPos);

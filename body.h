@@ -2,9 +2,9 @@
 #define BODY_H
 
 #include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
 #include <QGLContext>
 #include <QOpenGLFunctions>
+#include <QOpenGLBuffer>
 #include <QOpenGLWidget>
 #include <QOpenGLTexture>
 #include <QImage>

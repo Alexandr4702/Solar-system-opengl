@@ -23,6 +23,7 @@ set(PROJECT_SOURCES
         body.cpp
         world.cpp
         camera.cpp
+        ShadowMapTech.cpp
 )
 
 include_directories(./eigen)

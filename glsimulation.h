@@ -19,6 +19,7 @@
 
 #include "world.h"
 #include "camera.h"
+#include "ShadowMapTech.h"
 
 class GlSimulation : public QOpenGLWidget, public QOpenGLFunctions
 {
@@ -44,8 +45,9 @@ private:
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
     QOpenGLShaderProgram _shaderProgrammBody;
 
-    QOpenGLShaderProgram _shaderProgrammShadowMap;
-    std::unique_ptr<QOpenGLFramebufferObject> _shadowMapFrameBuffer;
+    // QOpenGLShaderProgram _shaderProgrammShadowMap;
+    // std::unique_ptr<QOpenGLFramebufferObject> _shadowMapFrameBuffer;
+    std::unique_ptr<ShadowMapTech> _shaderMapTechPtr;
 
     std::shared_ptr<World> _world;
     Camera _cam;
