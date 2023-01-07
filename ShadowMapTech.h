@@ -6,12 +6,49 @@
 #include <QOpenGLFunctions>
 #include <Eigen/Core>
 
+class ShadowMapFBO: public QOpenGLFunctions
+{
+public:
+    ShadowMapFBO();
+
+    ~ShadowMapFBO();
+
+    bool Init(unsigned int Width, unsigned int Height, bool ForPCF = false);
+
+    void BindForWriting();
+
+    void BindForReading(GLenum TextureUnit);
+
+private:
+    uint m_width = 0;
+    uint m_height = 0;
+    GLuint m_fbo;
+    GLuint m_shadowMap;
+};
+
+class CascadedShadowMapFBO: public QOpenGLFunctions
+{
+public:
+    CascadedShadowMapFBO();
+
+    ~CascadedShadowMapFBO();
+
+    bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
+
+    void BindForWriting(uint CascadeIndex);
+
+    void BindForReading();
+
+private:
+    GLuint m_fbo;
+    GLuint m_shadowMap[3];
+};
+
 class ShadowMapTech: public QOpenGLFunctions
 {
     public:
     ShadowMapTech(QOpenGLContext* ctx_) : QOpenGLFunctions(ctx_)
     {
-
     }
     bool init()
     {
@@ -37,6 +74,9 @@ class ShadowMapTech: public QOpenGLFunctions
     QOpenGLShaderProgram _shaderProgramTechMap;
     GLuint _WVPLocation;
     GLuint _textureLocation;
+
+    uint _width ;
+    uint _height;
 };
 
 #endif // __SHADOWMAP_H__
