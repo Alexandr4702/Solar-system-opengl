@@ -33,7 +33,7 @@ void GlSimulation::initializeGL()
     _shaderMapTechPtr = std::make_unique<ShadowMapTech>(context());
 
     createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
-    createShaderProgramFromFiles(_shaderMapTechPtr->shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
+    createShaderProgramFromFiles(_shaderMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
@@ -85,7 +85,7 @@ void GlSimulation::initializeGL()
 
     _world->_bodies.emplace_back(Cubesat6u);
 
-    _world->_bodies.emplace_back(Sun);
+    // _world->_bodies.emplace_back(Sun);
     _world->_bodies.emplace_back(Mercury);
     _world->_bodies.emplace_back(Earth);
     _world->_bodies.emplace_back(Moon);
