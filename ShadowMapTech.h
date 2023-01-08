@@ -9,7 +9,7 @@
 class ShadowMapFBO: public QOpenGLFunctions
 {
 public:
-    ShadowMapFBO();
+    ShadowMapFBO(QOpenGLContext* ctx_);
 
     ~ShadowMapFBO();
 

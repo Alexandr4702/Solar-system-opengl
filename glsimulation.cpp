@@ -30,12 +30,18 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
+    // std::cerr << "Init." << size().width() << " " << size().height() << "\n";
+
     _shaderMapTechPtr = std::make_unique<ShadowMapTech>(context());
+    _shadowMapFBO = std::make_unique<ShadowMapFBO>(context());
+
+    _shadowMapFBO->Init(size().width(), size().height());
 
     createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
     createShaderProgramFromFiles(_shaderMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
 
-    _shaderMapTechPtr->init();
+    if(!_shaderMapTechPtr->init())
+        std::cerr << "blyatstcvo razvrat narkotiki \n";
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
@@ -50,7 +56,7 @@ void GlSimulation::initializeGL()
     Mercury.setBodyScale({MercuryScale, MercuryScale, MercuryScale});
 
     float MercuryPos = 69816900 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d MercuryPosVec({MercuryPos, 0, 0});
+    Eigen::Vector3d MercuryPosVec({0, 0, MercuryPos});
     Mercury.setBodyPosition(MercuryPosVec);
 
     Body Earth(this->context(), "../resources/models/earth.obj");
@@ -59,7 +65,7 @@ void GlSimulation::initializeGL()
     Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
 
     float EarthPos = 149.6 * 1e6 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d EarthPosVec({EarthPos, 0, 0});
+    Eigen::Vector3d EarthPosVec({0, 0, EarthPos});
     Earth.setBodyPosition(EarthPosVec);
 
     Body Moon(this->context(), "../resources/models/Moon/Moon.obj");
@@ -67,7 +73,7 @@ void GlSimulation::initializeGL()
     Moon.setBodyScale({MoonScale, MoonScale, MoonScale});
 
     float MoonPosRelativeEarth = 400000 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d MoonPosRelativeEarthVec({MoonPosRelativeEarth, 0, 0});
+    Eigen::Vector3d MoonPosRelativeEarthVec({0, 0, MoonPosRelativeEarth});
     Moon.setBodyPosition(MoonPosRelativeEarthVec + EarthPosVec);
 
     Body Neptune(this->context(), "../resources/models/Neptune/Neptune.obj");
@@ -75,7 +81,7 @@ void GlSimulation::initializeGL()
     Neptune.setBodyScale({NeptuneScale, NeptuneScale, NeptuneScale});
 
     float NeptunePos = 4503443661.0 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d NeptunePosVec({NeptunePos, 0, 0});
+    Eigen::Vector3d NeptunePosVec({0, 0, NeptunePos});
     Neptune.setBodyPosition(NeptunePosVec);
 
     Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
@@ -87,13 +93,19 @@ void GlSimulation::initializeGL()
 
     _world->_bodies.emplace_back(Cubesat6u);
 
-    // _world->_bodies.emplace_back(Sun);
+    _world->_bodies.emplace_back(Sun);
     _world->_bodies.emplace_back(Mercury);
     _world->_bodies.emplace_back(Earth);
     _world->_bodies.emplace_back(Moon);
     _world->_bodies.emplace_back(Neptune);
 
     _cam.setTranslationCam(Earth.getBodyPosition());
+    std::cerr << Earth.getBodyPosition().transpose() << "\n";
+    std::cerr << Moon.getBodyPosition().transpose() << "\n";
+    std::cerr << _cam.getTranslation().transpose() << "\n";
+
+    // double angle = 90 * M_PI / 180.0;
+    // _cam.setCamRotation(Eigen::Quaterniond(cos(angle / 2), 0, sin(angle / 2), 0));
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -287,4 +299,5 @@ void GlSimulation::resizeGL(int width, int height)
 {
     _cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
     glViewport(0, 0, GLint(width), GLint(height));
+    // std::cerr << "Resize. " << size().width() << " " << size().height() << "\n";
 }

@@ -1,6 +1,6 @@
 #include "ShadowMapTech.h"
 
-ShadowMapFBO::ShadowMapFBO()
+ShadowMapFBO::ShadowMapFBO(QOpenGLContext* ctx_): QOpenGLFunctions(ctx_)
 {
     m_fbo = 0;
     m_shadowMap = 0;

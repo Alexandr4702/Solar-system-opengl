@@ -33,6 +33,7 @@ public:
     void rotateCam(Eigen::Quaterniond &&rot);
     void rotateCam(Eigen::Vector2d &mouseCoord);
     void setCamRotation(Eigen::Quaterniond &rot);
+    void setCamRotation(Eigen::Quaterniond&&rot);
     void ScaleCam(Eigen::Vector3d &scal);
     Eigen::Matrix4d getCameraMatrix() const;
     Eigen::Matrix4f getCameraProjectiveMatrix() const;

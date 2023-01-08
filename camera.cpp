@@ -84,6 +84,15 @@ void Camera::setCamRotation(Eigen::Quaterniond& rot)
     std::scoped_lock guard(mtx);
     rotation = rot;
 }
+
+void Camera::setCamRotation(Eigen::Quaterniond&& rot)
+{
+    if(rot.coeffs().hasNaN())
+        return;
+    std::scoped_lock guard(mtx);
+    rotation = rot;
+}
+
 void Camera::ScaleCam(Eigen::Vector3d& scal)
 {
     std::scoped_lock guard(mtx);
