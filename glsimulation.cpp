@@ -62,19 +62,20 @@ void GlSimulation::initializeGL()
     Body Earth(this->context(), "../resources/models/earth.obj");
     //6371000m to the light mseconds 299792458
     float EarthScale = 6371 * 1e3 * PlanetScaleFactor;
-    Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
+    // Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
 
     float EarthPos = 149.6 * 1e6 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d EarthPosVec({0, 0, EarthPos});
+    Eigen::Vector3d EarthPosVec({0, 0, -5});
     Earth.setBodyPosition(EarthPosVec);
 
     Body Moon(this->context(), "../resources/models/Moon/Moon.obj");
     float MoonScale = 1737.4 * 1e3 * PlanetScaleFactor;
-    Moon.setBodyScale({MoonScale, MoonScale, MoonScale});
+    // Moon.setBodyScale({MoonScale, MoonScale, MoonScale});
 
     float MoonPosRelativeEarth = 400000 * 1e3 * DisctaneScaleFactor;
     Eigen::Vector3d MoonPosRelativeEarthVec({0, 0, MoonPosRelativeEarth});
     Moon.setBodyPosition(MoonPosRelativeEarthVec + EarthPosVec);
+    Moon.setBodyPosition(Eigen::Vector3d(-1.1,0,-3));
 
     Body Neptune(this->context(), "../resources/models/Neptune/Neptune.obj");
     float NeptuneScale = 24622 * 1e3 * PlanetScaleFactor;
@@ -86,20 +87,23 @@ void GlSimulation::initializeGL()
 
     Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
     // by default scale is mm
-    float CubesatScale = 1e-3 * BodyScaleFactor;
+    // float CubesatScale = 1e-3 * BodyScaleFactor;
+    float CubesatScale = 1e-3 * 1;
     Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
     Eigen::Vector3d Cubesat6uPosVec = Eigen::Vector3d(500 * 1e3, 0, 0) * DisctaneScaleFactor + EarthPosVec + Eigen::Vector3d(EarthScale, 0, 0);
     Cubesat6u.setBodyPosition(Cubesat6uPosVec);
 
+    Cubesat6u.setBodyPosition(Eigen::Vector3d(0,0, -2));
+
     _world->_bodies.emplace_back(Cubesat6u);
 
-    _world->_bodies.emplace_back(Sun);
+    // _world->_bodies.emplace_back(Sun);
     _world->_bodies.emplace_back(Mercury);
     _world->_bodies.emplace_back(Earth);
     _world->_bodies.emplace_back(Moon);
     _world->_bodies.emplace_back(Neptune);
 
-    _cam.setTranslationCam(Earth.getBodyPosition());
+    // _cam.setTranslationCam(Earth.getBodyPosition());
     std::cerr << Earth.getBodyPosition().transpose() << "\n";
     std::cerr << Moon.getBodyPosition().transpose() << "\n";
     std::cerr << _cam.getTranslation().transpose() << "\n";
