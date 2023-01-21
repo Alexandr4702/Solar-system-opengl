@@ -14,6 +14,7 @@ in struct data_to_pass
     vec4 positionWorld;
     vec4 positionCam;
     vec4 posProjected;
+    vec4 lightPos;
 } to_fs;
 
 uniform sampler2D textures;
@@ -24,6 +25,22 @@ uniform vec3 ambient_texture;
 uniform vec3 diffuse_texture;
 uniform vec3 specular_texture;
 uniform float shininess;
+
+uniform sampler2D shadowMap;
+
+float CalcShadowFactor(vec4 LightSpacePos)
+{
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
+    vec2 UVCoords;
+    UVCoords.x = 0.5 * ProjCoords.x + 0.5;
+    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
+    float z = 0.5 * ProjCoords.z + 0.5;
+    float Depth = texture(shadowMap, UVCoords).x;
+    if (Depth < z + 0.00001)
+        return 0.5;
+    else
+        return 1.0;
+}
 
 vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
 {
@@ -86,6 +103,8 @@ void main()
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.positionWorld.xyz, lightColor, camPosition, texture_properties);
     // fragColor = vec4(to_fs.posProjected.z, to_fs.posProjected.z, to_fs.posProjected.z, 1);
+    // fragColor = texture(shadowMap, to_fs.v_texcoord);
+    // fragColor = to_fs.lightPos;
 }
 //! [0]
 

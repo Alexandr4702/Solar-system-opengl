@@ -95,6 +95,10 @@ void GlSimulation::initializeGL()
 
     Cubesat6u.setBodyPosition(Eigen::Vector3d(0,0, -2));
 
+    Body Cube(this->context(), "../resources/models/Cube/Cube.obj");
+    Cube.setBodyPosition(Eigen::Vector3d(0, -1 ,-3));
+    Cube.setBodyScale(Eigen::Vector3d(0.5, 0.5 , 0.5));
+
     _world->_bodies.emplace_back(Cubesat6u);
 
     // _world->_bodies.emplace_back(Sun);
@@ -102,6 +106,7 @@ void GlSimulation::initializeGL()
     _world->_bodies.emplace_back(Earth);
     _world->_bodies.emplace_back(Moon);
     _world->_bodies.emplace_back(Neptune);
+    _world->_bodies.emplace_back(Cube);
 
     // _cam.setTranslationCam(Earth.getBodyPosition());
     std::cerr << Earth.getBodyPosition().transpose() << "\n";
@@ -123,25 +128,44 @@ void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    Eigen::Matrix4f v = _cam.getCameraMatrix().cast <float>();
-    Eigen::Matrix4f p = _cam.getProjetionMatrix().cast <float>();
+    Eigen::Matrix4f viewMat = _cam.getCameraMatrix().cast <float>();
+    Eigen::Matrix4f projectMat = _cam.getProjetionMatrix().cast <float>();
     Eigen::Vector3d camPos = _cam.getTranslation();
 
     Eigen::Affine3f LightTransform;
     LightTransform.setIdentity();
-    // LightMatrix.scale(scale);
-    // LightMatrix.rotate(rotation);
     LightTransform.translate(Eigen::Vector3f::Zero());
-    Eigen::Matrix4f LightMatrix = LightTransform.matrix();
+    Eigen::Matrix4f lightMatrix = LightTransform.matrix().transpose();
+    QMatrix4x4 lightMatrixQt(lightMatrix.data());
+
+    _shadowMapFBO->BindForWriting();
+    glClear(GL_DEPTH_BUFFER_BIT);
 
     _shaderMapTechPtr->_shaderProgramTechMap.bind();
-
-    _shaderMapTechPtr->setWVP(LightMatrix);
-
-    _shaderProgrammBody.bind();
+    _shaderMapTechPtr->setWVP(lightMatrix);
     for(auto& body: _world->_bodies)
     {
-        body.draw(_shaderProgrammBody, v, p, camPos);
+        body.draw(_shaderMapTechPtr->_shaderProgramTechMap, viewMat, projectMat, camPos);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    _shaderProgrammBody.bind();
+
+    int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
+    if(shadowMapLocation >= 0) {
+        glUniform1i(shadowMapLocation, 2);
+        _shadowMapFBO->BindForReading(GL_TEXTURE2);
+    }
+
+    int lightMatrixLocaction = _shaderProgrammBody.uniformLocation("light_matrix");
+    if(lightMatrixLocaction >= 0) {
+        _shaderProgrammBody.setUniformValue(lightMatrixLocaction, lightMatrixQt);
+    }
+
+    for(auto& body: _world->_bodies)
+    {
+        body.draw(_shaderProgrammBody, viewMat, projectMat, camPos);
     }
 }
 

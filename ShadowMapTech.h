@@ -5,6 +5,7 @@
 #include <QGLContext>
 #include <QOpenGLFunctions>
 #include <Eigen/Core>
+#include <iostream>
 
 class ShadowMapFBO: public QOpenGLFunctions
 {
@@ -55,8 +56,9 @@ class ShadowMapTech: public QOpenGLFunctions
         _WVPLocation = _shaderProgramTechMap.uniformLocation("gWVP");
         _textureLocation = _shaderProgramTechMap.uniformLocation("gShadowMap");
 
-        if (_WVPLocation == -1 ||
-            _textureLocation == -1) {
+        if (_WVPLocation < 0 ||
+            _textureLocation < 0) {
+            std::cerr << "Unable to find location\n";
             return false;
         }
 
@@ -64,16 +66,18 @@ class ShadowMapTech: public QOpenGLFunctions
     }
     void setWVP(Eigen::Matrix4f& mvp)
     {
-        //Should i transpose mstrix??
-        glUniformMatrix4fv(_WVPLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
+        // Should i transpose mstrix??
+        if(_WVPLocation >= 0)
+            glUniformMatrix4fv(_WVPLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
     }
     void SetTextureUnit(uint32_t TextureUnit)
     {
-        glUniform1i(_textureLocation, TextureUnit);
+        if(_textureLocation >= 0)
+            glUniform1i(_textureLocation, TextureUnit);
     }
     QOpenGLShaderProgram _shaderProgramTechMap;
-    GLuint _WVPLocation;
-    GLuint _textureLocation;
+    int _WVPLocation;
+    int _textureLocation;
 
     uint _width ;
     uint _height;

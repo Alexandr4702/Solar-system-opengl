@@ -5,7 +5,6 @@ layout (location = 1) in vec2 texture_coordinate;
 layout (location = 2) in vec3 normal;
 
 uniform mat4 gWVP;
-
 out vec2 TexCoordOut;
 
 void main()
