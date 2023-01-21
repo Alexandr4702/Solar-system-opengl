@@ -138,6 +138,15 @@ void GlSimulation::paintGL()
     Eigen::Matrix4f lightMatrix = LightTransform.matrix().transpose();
     QMatrix4x4 lightMatrixQt(lightMatrix.data());
 
+    Eigen::Matrix4f v_matrix = viewMat.transpose();
+    QMatrix4x4 v_matrixQt(v_matrix.data());
+
+    Eigen::Matrix4f p_matrix = projectMat.transpose();
+    QMatrix4x4 p_matrixQt(p_matrix.data());
+
+    QVector3D camPosQt(camPos.x(), camPos.y(), camPos.z());
+
+//--- Creating shadow map
     _shadowMapFBO->BindForWriting();
     glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -145,13 +154,14 @@ void GlSimulation::paintGL()
     _shaderMapTechPtr->setWVP(lightMatrix);
     for(auto& body: _world->_bodies)
     {
-        body.draw(_shaderMapTechPtr->_shaderProgramTechMap, viewMat, projectMat, camPos);
+        body.draw(_shaderMapTechPtr->_shaderProgramTechMap);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _shaderProgrammBody.bind();
 
+//---Set Common Variable
     int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
     if(shadowMapLocation >= 0) {
         glUniform1i(shadowMapLocation, 2);
@@ -163,9 +173,24 @@ void GlSimulation::paintGL()
         _shaderProgrammBody.setUniformValue(lightMatrixLocaction, lightMatrixQt);
     }
 
+    int viewMatrixLocaction = _shaderProgrammBody.uniformLocation("view_matrix");
+    if(viewMatrixLocaction >= 0) {
+        _shaderProgrammBody.setUniformValue(viewMatrixLocaction, v_matrixQt);
+    }
+
+    int projectiveMatrixLocaction = _shaderProgrammBody.uniformLocation("projective_matrix");
+    if(projectiveMatrixLocaction >= 0) {
+        _shaderProgrammBody.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
+    }
+
+    int camMatrixLocaction = _shaderProgrammBody.uniformLocation("camPosition");
+    if(camMatrixLocaction >= 0) {
+        _shaderProgrammBody.setUniformValue(camMatrixLocaction, camPosQt);
+    }
+
     for(auto& body: _world->_bodies)
     {
-        body.draw(_shaderProgrammBody, viewMat, projectMat, camPos);
+        body.draw(_shaderProgrammBody);
     }
 }
 

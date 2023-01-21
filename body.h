@@ -202,7 +202,6 @@ public:
      Body& operator=(const Body&);
      ~Body();
      void draw(QOpenGLShaderProgram& program);
-     void draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& viewMatrix, Eigen::Matrix4f& projectionMatrix, Eigen::Vector3d& camPos);
      void update();
 
      void setBodyPosition(Eigen::Vector3d&);

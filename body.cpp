@@ -89,28 +89,12 @@ Body::~Body()
 
 void Body::draw(QOpenGLShaderProgram& program)
 {
-    for(auto&& mesh: meshes)
-        mesh.draw(program);
-}
-
-void Body::draw(QOpenGLShaderProgram& program, Eigen::Matrix4f& viewMatrix, Eigen::Matrix4f& projectionMatrix, Eigen::Vector3d& camPos)
-{
     Eigen::Matrix4f m_matrix = getBodyMatrix().transpose();
     QMatrix4x4 m_matrixQt(m_matrix.data());
     program.setUniformValue("world_matrix", m_matrixQt);
 
-    Eigen::Matrix4f v_matrix = viewMatrix.transpose();
-    QMatrix4x4 v_matrixQt(v_matrix.data());
-    program.setUniformValue("view_matrix", v_matrixQt);
-
-    Eigen::Matrix4f p_matrix = projectionMatrix.transpose();
-    QMatrix4x4 p_matrixQt(p_matrix.data());
-    program.setUniformValue("projective_matrix", p_matrixQt);
-
-    QVector3D camPosQt(camPos.x(), camPos.y(), camPos.z());
-    program.setUniformValue("camPosition", camPosQt);
-
-    draw(program);
+    for(auto&& mesh: meshes)
+        mesh.draw(program);
 }
 
 void Body::update()
