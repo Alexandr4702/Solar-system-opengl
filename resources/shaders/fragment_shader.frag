@@ -36,6 +36,7 @@ float CalcShadowFactor(vec4 LightSpacePos)
     UVCoords.y = 0.5 * ProjCoords.y + 0.5;
     float z = 0.5 * ProjCoords.z + 0.5;
     float Depth = texture(shadowMap, UVCoords).x;
+    return Depth;
     if (Depth < z + 0.00001)
         return 0.5;
     else
@@ -105,6 +106,7 @@ void main()
     // fragColor = vec4(to_fs.posProjected.z, to_fs.posProjected.z, to_fs.posProjected.z, 1);
     // fragColor = texture(shadowMap, to_fs.v_texcoord);
     // fragColor = to_fs.lightPos;
+    // fragColor = vec4(vec3(CalcShadowFactor(to_fs.lightPos)), 1);
 }
 //! [0]
 

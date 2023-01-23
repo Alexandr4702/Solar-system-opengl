@@ -53,31 +53,43 @@ class ShadowMapTech: public QOpenGLFunctions
     }
     bool init()
     {
-        _WVPLocation = _shaderProgramTechMap.uniformLocation("gWVP");
+        _lightMatrixLocation = _shaderProgramTechMap.uniformLocation("light_matrix");
         _textureLocation = _shaderProgramTechMap.uniformLocation("gShadowMap");
+        _projectiveMatrixLocation = _shaderProgramTechMap.uniformLocation("projective_matrix");
 
-        if (_WVPLocation < 0 ||
-            _textureLocation < 0) {
+        if (_lightMatrixLocation < 0 ||
+            _textureLocation < 0 ||
+            _projectiveMatrixLocation < 0
+            ) {
             std::cerr << "Unable to find location\n";
             return false;
         }
 
         return true;
     }
-    void setWVP(Eigen::Matrix4f& mvp)
+    void setLightMatrix(Eigen::Matrix4f& mvp)
     {
-        // Should i transpose mstrix??
-        if(_WVPLocation >= 0)
-            glUniformMatrix4fv(_WVPLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
+        // Should i transpose matrix??
+        if(_lightMatrixLocation >= 0)
+            glUniformMatrix4fv(_lightMatrixLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
     }
+
+    void setProjectiveMatrix(Eigen::Matrix4f& mvp)
+    {
+        // Should i transpose matrix??
+        if(_lightMatrixLocation >= 0)
+            glUniformMatrix4fv(_projectiveMatrixLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
+    }
+
     void SetTextureUnit(uint32_t TextureUnit)
     {
         if(_textureLocation >= 0)
             glUniform1i(_textureLocation, TextureUnit);
     }
     QOpenGLShaderProgram _shaderProgramTechMap;
-    int _WVPLocation;
+    int _lightMatrixLocation;
     int _textureLocation;
+    int _projectiveMatrixLocation;
 
     uint _width ;
     uint _height;

@@ -32,15 +32,15 @@ void GlSimulation::initializeGL()
 
     // std::cerr << "Init." << size().width() << " " << size().height() << "\n";
 
-    _shaderMapTechPtr = std::make_unique<ShadowMapTech>(context());
+    _shadowMapTechPtr = std::make_unique<ShadowMapTech>(context());
     _shadowMapFBO = std::make_unique<ShadowMapFBO>(context());
 
     _shadowMapFBO->Init(size().width(), size().height());
 
     createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
-    createShaderProgramFromFiles(_shaderMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
+    createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
 
-    if(!_shaderMapTechPtr->init())
+    if(!_shadowMapTechPtr->init())
         std::cerr << "blyatstcvo razvrat narkotiki \n";
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
@@ -147,30 +147,41 @@ void GlSimulation::paintGL()
     QVector3D camPosQt(camPos.x(), camPos.y(), camPos.z());
 
 //--- Creating shadow map
-    _shadowMapFBO->BindForWriting();
-    glClear(GL_DEPTH_BUFFER_BIT);
+    // _shadowMapFBO->BindForWriting();
+    // glClear(GL_DEPTH_BUFFER_BIT);
 
-    _shaderMapTechPtr->_shaderProgramTechMap.bind();
-    _shaderMapTechPtr->setWVP(lightMatrix);
-    for(auto& body: _world->_bodies)
-    {
-        body.draw(_shaderMapTechPtr->_shaderProgramTechMap);
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // _shadowMapTechPtr->_shaderProgramTechMap.bind();
 
+    // int lightMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("light_matrix");
+    // if(lightMatrixLocaction >= 0) {
+    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(lightMatrixLocaction, lightMatrixQt);
+    // }
+
+    // int projectiveMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("projective_matrix");
+    // if(projectiveMatrixLocaction >= 0) {
+    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
+    // }
+
+    // for(auto& body: _world->_bodies)
+    // {
+    //     body.draw(_shadowMapTechPtr->_shaderProgramTechMap);
+    // }
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//---Draw body
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _shaderProgrammBody.bind();
 
 //---Set Common Variable
     int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
     if(shadowMapLocation >= 0) {
-        glUniform1i(shadowMapLocation, 2);
-        _shadowMapFBO->BindForReading(GL_TEXTURE2);
+        glUniform1i(shadowMapLocation, 5);
+        _shadowMapFBO->BindForReading(GL_TEXTURE5);
     }
 
-    int lightMatrixLocaction = _shaderProgrammBody.uniformLocation("light_matrix");
-    if(lightMatrixLocaction >= 0) {
-        _shaderProgrammBody.setUniformValue(lightMatrixLocaction, lightMatrixQt);
+    int lightMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("light_matrix");
+    if(lightMatrixLocaction_BodyShader >= 0) {
+        _shaderProgrammBody.setUniformValue(lightMatrixLocaction_BodyShader, lightMatrixQt);
     }
 
     int viewMatrixLocaction = _shaderProgrammBody.uniformLocation("view_matrix");
@@ -178,9 +189,9 @@ void GlSimulation::paintGL()
         _shaderProgrammBody.setUniformValue(viewMatrixLocaction, v_matrixQt);
     }
 
-    int projectiveMatrixLocaction = _shaderProgrammBody.uniformLocation("projective_matrix");
-    if(projectiveMatrixLocaction >= 0) {
-        _shaderProgrammBody.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
+    int projectiveMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("projective_matrix");
+    if(projectiveMatrixLocaction_BodyShader >= 0) {
+        _shaderProgrammBody.setUniformValue(projectiveMatrixLocaction_BodyShader, p_matrixQt);
     }
 
     int camMatrixLocaction = _shaderProgrammBody.uniformLocation("camPosition");
