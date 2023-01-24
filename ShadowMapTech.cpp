@@ -74,6 +74,47 @@ void ShadowMapFBO::BindForReading(GLenum TextureUnit)
     glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 }
 
+void ShadowMapFBO::resize(int WindowWidth, int WindowHeight) {
+    m_width = WindowWidth;
+    m_height = WindowHeight;
+    bool ForPCF = false;
+
+    if (m_shadowMap != 0) {
+        glDeleteTextures(1, &m_shadowMap);
+    }
+
+    // Create the depth buffer
+    glGenTextures(1, &m_shadowMap);
+    glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+    GLint FilterType = ForPCF ? GL_LINEAR : GL_NEAREST;
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, FilterType);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, FilterType);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap, 0);
+
+    // Disable writes to the color buffer
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    if (Status != GL_FRAMEBUFFER_COMPLETE) {
+        printf("FB error, status: 0x%x\n", Status);
+        // return false;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

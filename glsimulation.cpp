@@ -95,10 +95,6 @@ void GlSimulation::initializeGL()
 
     Cubesat6u.setBodyPosition(Eigen::Vector3d(0,0, -2));
 
-    Body Cube(this->context(), "../resources/models/Cube/Cube.obj");
-    Cube.setBodyPosition(Eigen::Vector3d(0, -1 ,-3));
-    Cube.setBodyScale(Eigen::Vector3d(0.5, 0.5 , 0.5));
-
     _world->_bodies.emplace_back(Cubesat6u);
 
     // _world->_bodies.emplace_back(Sun);
@@ -106,9 +102,9 @@ void GlSimulation::initializeGL()
     _world->_bodies.emplace_back(Earth);
     _world->_bodies.emplace_back(Moon);
     _world->_bodies.emplace_back(Neptune);
-    _world->_bodies.emplace_back(Cube);
+    // _world->_bodies.emplace_back(Cube);
 
-    // _cam.setTranslationCam(Earth.getBodyPosition());
+    // _cam.setTranslationCam(Ea+rth.getBodyPosition());
     std::cerr << Earth.getBodyPosition().transpose() << "\n";
     std::cerr << Moon.getBodyPosition().transpose() << "\n";
     std::cerr << _cam.getTranslation().transpose() << "\n";
@@ -362,6 +358,7 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
 void GlSimulation::resizeGL(int width, int height)
 {
     _cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
+    _shadowMapFBO->resize(width, height);
     glViewport(0, 0, GLint(width), GLint(height));
     // std::cerr << "Resize. " << size().width() << " " << size().height() << "\n";
 }

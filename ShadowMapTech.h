@@ -20,6 +20,8 @@ public:
 
     void BindForReading(GLenum TextureUnit);
 
+    void resize(int WindowWidth, int WindowHeight);
+
 private:
     uint m_width = 0;
     uint m_height = 0;
@@ -39,6 +41,8 @@ public:
     void BindForWriting(uint CascadeIndex);
 
     void BindForReading();
+
+    void resize(int WindowWidth, int WindowHeight);
 
 private:
     GLuint m_fbo;
