@@ -147,26 +147,26 @@ void GlSimulation::paintGL()
     QVector3D camPosQt(camPos.x(), camPos.y(), camPos.z());
 
 //--- Creating shadow map
-    // _shadowMapFBO->BindForWriting();
-    // glClear(GL_DEPTH_BUFFER_BIT);
+    _shadowMapFBO->BindForWriting();
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    // _shadowMapTechPtr->_shaderProgramTechMap.bind();
+    _shadowMapTechPtr->_shaderProgramTechMap.bind();
 
-    // int lightMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("light_matrix");
-    // if(lightMatrixLocaction >= 0) {
-    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(lightMatrixLocaction, lightMatrixQt);
-    // }
+    int lightMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("light_matrix");
+    if(lightMatrixLocaction >= 0) {
+        _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(lightMatrixLocaction, lightMatrixQt);
+    }
 
-    // int projectiveMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("projective_matrix");
-    // if(projectiveMatrixLocaction >= 0) {
-    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
-    // }
+    int projectiveMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("projective_matrix");
+    if(projectiveMatrixLocaction >= 0) {
+        _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
+    }
 
-    // for(auto& body: _world->_bodies)
-    // {
-    //     body.draw(_shadowMapTechPtr->_shaderProgramTechMap);
-    // }
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    for(auto& body: _world->_bodies)
+    {
+        body.draw(_shadowMapTechPtr->_shaderProgramTechMap);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 //---Draw body
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

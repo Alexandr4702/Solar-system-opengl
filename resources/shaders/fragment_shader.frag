@@ -36,9 +36,9 @@ float CalcShadowFactor(vec4 LightSpacePos)
     UVCoords.y = 0.5 * ProjCoords.y + 0.5;
     float z = 0.5 * ProjCoords.z + 0.5;
     float Depth = texture(shadowMap, UVCoords).x;
-    return Depth;
-    if (Depth < z + 0.00001)
-        return 0.5;
+    // return Depth;
+    if (Depth < z - 0.00001)
+        return 0.0;
     else
         return 1.0;
 }
@@ -98,7 +98,7 @@ void main()
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * 0.1;
-    texture_properties.diffuse = temp.xyz * 0.45;
+    texture_properties.diffuse = temp.xyz * 0.45 * vec3(CalcShadowFactor(to_fs.lightPos));
     texture_properties.specular = temp.xyz * 0.45;
     texture_properties.shininess = 8;
 
