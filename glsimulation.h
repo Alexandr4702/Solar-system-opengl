@@ -48,7 +48,6 @@ private:
     // QOpenGLShaderProgram _shaderProgrammShadowMap;
     // std::unique_ptr<QOpenGLFramebufferObject> _shadowMapFrameBuffer;
     std::unique_ptr<ShadowMapTech> _shadowMapTechPtr;
-    std::unique_ptr<ShadowMapFBO>  _shadowMapFBO;
 
     std::shared_ptr<World> _world;
     Camera _cam;

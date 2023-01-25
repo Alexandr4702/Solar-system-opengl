@@ -49,11 +49,14 @@ private:
 class ShadowMapTech: public QOpenGLFunctions
 {
     public:
-    ShadowMapTech(QOpenGLContext* ctx_) : QOpenGLFunctions(ctx_)
+    ShadowMapTech(QOpenGLContext* ctx_) : QOpenGLFunctions(ctx_), _shadowMapFBO(std::make_unique<ShadowMapFBO>(ctx_))
     {
     }
-    bool init()
+
+    bool Init(unsigned int Width, unsigned int Height)
     {
+        _shadowMapFBO->Init(Width, Height);
+
         _lightMatrixLocation = _shaderProgramTechMap.uniformLocation("light_matrix");
         _projectiveMatrixLocation = _shaderProgramTechMap.uniformLocation("projective_matrix");
 
@@ -83,12 +86,31 @@ class ShadowMapTech: public QOpenGLFunctions
             glUniformMatrix4fv(_projectiveMatrixLocation, 1, GL_FALSE, (const GLfloat*)prjectiveMatrix.data());
     }
 
+    void prepeBeforeGeneratingShadowMap() {
+        _shadowMapFBO->BindForWriting();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        _shaderProgramTechMap.bind();
+    }
+
+    void preapeforReadingShadowMap(GLint textueUnit, int shadowMapLocation) {
+        // int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
+        if(shadowMapLocation >= 0) {
+            glUniform1i(shadowMapLocation, textueUnit);
+            _shadowMapFBO->BindForReading(GL_TEXTURE0 + textueUnit);
+        }
+    }
+
+    void resize(int WindowWidth, int WindowHeight) {
+        _shadowMapFBO->resize(WindowWidth, WindowHeight);
+    }
+
     QOpenGLShaderProgram _shaderProgramTechMap;
     int _lightMatrixLocation;
     int _projectiveMatrixLocation;
 
     uint _width ;
     uint _height;
+    std::unique_ptr<ShadowMapFBO> _shadowMapFBO;
 };
 
 class PointShadowMapTech: public QOpenGLFunctions

@@ -30,17 +30,12 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    // std::cerr << "Init." << size().width() << " " << size().height() << "\n";
-
     _shadowMapTechPtr = std::make_unique<ShadowMapTech>(context());
-    _shadowMapFBO = std::make_unique<ShadowMapFBO>(context());
-
-    _shadowMapFBO->Init(size().width(), size().height());
 
     createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/Body/vertex_shader.vert", "../resources/shaders/Body/fragment_shader.frag");
     createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadowMapGenerator/shadow_map_vertex.vert", "../resources/shaders/shadowMapGenerator/shadow_map_frag.frag");
 
-    if(!_shadowMapTechPtr->init())
+    if(!_shadowMapTechPtr->Init(size().width(), size().height()))
         std::cerr << "blyatstcvo razvrat narkotiki \n";
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
@@ -135,13 +130,8 @@ void GlSimulation::paintGL()
     Eigen::Matrix4f lightMatrix = LightTransform.matrix();
 
 //--- Creating shadow map
-    _shadowMapFBO->BindForWriting();
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    _shadowMapTechPtr->_shaderProgramTechMap.bind();
-
-    _shadowMapTechPtr->setLightMatrix(lightMatrix);
-    _shadowMapTechPtr->setProjectiveMatrix(projectMat);
+    _shadowMapTechPtr->prepeBeforeGeneratingShadowMap();
+    _shadowMapTechPtr->setMatrixes(lightMatrix, projectMat);
 
     for(auto& body: _world->_bodies)
     {
@@ -155,9 +145,10 @@ void GlSimulation::paintGL()
 
 //---Set Common Variable
     int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
+    int shadowMapTexutreUnit = 3;
     if(shadowMapLocation >= 0) {
-        glUniform1i(shadowMapLocation, 5);
-        _shadowMapFBO->BindForReading(GL_TEXTURE5);
+        glUniform1i(shadowMapLocation, shadowMapTexutreUnit);
+        _shadowMapTechPtr->_shadowMapFBO->BindForReading(GL_TEXTURE0 + shadowMapTexutreUnit);
     }
 
     int lightMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("light_matrix");
@@ -343,7 +334,7 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
 void GlSimulation::resizeGL(int width, int height)
 {
     _cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
-    _shadowMapFBO->resize(width, height);
+    _shadowMapTechPtr->resize(width, height);
     glViewport(0, 0, GLint(width), GLint(height));
     // std::cerr << "Resize. " << size().width() << " " << size().height() << "\n";
 }

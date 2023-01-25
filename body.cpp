@@ -353,8 +353,8 @@ bool Body::ImportTestModel()
 void Mesh::draw(QOpenGLShaderProgram &program)
 {
     if(texture.get() != nullptr) {
-        texture->bind(10);
-        program.setUniformValue("textures", 10);
+        texture->bind(1);
+        program.setUniformValue("textures", 1);
     }
 
     arrayBuf->bind();
