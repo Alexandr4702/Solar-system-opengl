@@ -40,7 +40,6 @@ bool ShadowMapFBO::Init(unsigned int Width, unsigned int Height, bool ForPCF)
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap, 0);
 
@@ -83,7 +82,6 @@ void ShadowMapFBO::resize(int WindowWidth, int WindowHeight) {
         glDeleteTextures(1, &m_shadowMap);
     }
 
-    // Create the depth buffer
     glGenTextures(1, &m_shadowMap);
     glBindTexture(GL_TEXTURE_2D, m_shadowMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -115,77 +113,57 @@ void ShadowMapFBO::resize(int WindowWidth, int WindowHeight) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-CascadedShadowMapFBO::CascadedShadowMapFBO()
+CascadedShadowMapFBO::CascadedShadowMapFBO(QOpenGLContext* ctx_): QOpenGLExtraFunctions(ctx_)
 {
-    m_fbo = 0;
-    // ZERO_MEM(m_shadowMap);
+
 }
 
 CascadedShadowMapFBO::~CascadedShadowMapFBO()
 {
-    if (m_fbo != 0) {
-        glDeleteFramebuffers(1, &m_fbo);
+    if (m_depthMapFBO != 0) {
+        glDeleteFramebuffers(1, &m_depthMapFBO);
     }
 
-    // glDeleteTextures(ARRAY_SIZE_IN_ELEMENTS(m_shadowMap), m_shadowMap);
+    if (m_depthCubemap != 0) {
+        glDeleteTextures(1, &m_depthCubemap);
+    }
 }
 
 bool CascadedShadowMapFBO::Init(unsigned int WindowWidth, unsigned int WindowHeight)
 {
-    // Create the FBO
-    glGenFramebuffers(1, &m_fbo);
-
-    // Create the depth buffer
-    // glGenTextures(ARRAY_SIZE_IN_ELEMENTS(m_shadowMap), m_shadowMap);
-
-    // for (uint i = 0 ; i < ARRAY_SIZE_IN_ELEMENTS(m_shadowMap) ; i++) {
-    //     glBindTexture(GL_TEXTURE_2D, m_shadowMap[i]);
-    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, WindowWidth, WindowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap[0], 0);
-
-    // Disable writes to the color buffer
+    m_width = WindowWidth;
+    m_height = WindowHeight;
+    glGenFramebuffers(1, &m_depthMapFBO);
+    // create depth cubemap texture
+    glGenTextures(1, &m_depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_depthCubemap);
+    for (unsigned int i = 0; i < 6; ++i)
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthCubemap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
-
-    GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-    if (Status != GL_FRAMEBUFFER_COMPLETE) {
-        printf("FB error, status: 0x%x\n", Status);
-        return false;
-    }
-
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return true;
 }
 
-
 void CascadedShadowMapFBO::BindForWriting(uint CascadeIndex)
 {
-    // assert(CascadeIndex < ARRAY_SIZE_IN_ELEMENTS(m_shadowMap));
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap[CascadeIndex], 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+    glViewport(0, 0, m_width, m_height);
 }
 
-
-void CascadedShadowMapFBO::BindForReading()
+void CascadedShadowMapFBO::BindForReading(GLenum TextureUnit)
 {
-    // glActiveTexture(CASCACDE_SHADOW_TEXTURE_UNIT0);
-    // glBindTexture(GL_TEXTURE_2D, m_shadowMap[0]);
-
-    // glActiveTexture(CASCACDE_SHADOW_TEXTURE_UNIT1);
-    // glBindTexture(GL_TEXTURE_2D, m_shadowMap[1]);
-
-    // glActiveTexture(CASCACDE_SHADOW_TEXTURE_UNIT2);
-    // glBindTexture(GL_TEXTURE_2D, m_shadowMap[2]);
+    glActiveTexture(TextureUnit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_depthCubemap);
 }

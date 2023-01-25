@@ -37,8 +37,8 @@ void GlSimulation::initializeGL()
 
     _shadowMapFBO->Init(size().width(), size().height());
 
-    createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/vertex_shader.vert", "../resources/shaders/fragment_shader.frag");
-    createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadow_map_vertex.vert", "../resources/shaders/shadow_map_frag.frag");
+    createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/Body/vertex_shader.vert", "../resources/shaders/Body/fragment_shader.frag");
+    createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadowMapGenerator/shadow_map_vertex.vert", "../resources/shaders/shadowMapGenerator/shadow_map_frag.frag");
 
     if(!_shadowMapTechPtr->init())
         std::cerr << "blyatstcvo razvrat narkotiki \n";
@@ -124,6 +124,7 @@ void GlSimulation::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+//--- Prepe data
     Eigen::Matrix4f viewMat = _cam.getCameraMatrix().cast <float>();
     Eigen::Matrix4f projectMat = _cam.getProjetionMatrix().cast <float>();
     Eigen::Vector3d camPos = _cam.getTranslation();
@@ -148,15 +149,17 @@ void GlSimulation::paintGL()
 
     _shadowMapTechPtr->_shaderProgramTechMap.bind();
 
-    int lightMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("light_matrix");
-    if(lightMatrixLocaction >= 0) {
-        _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(lightMatrixLocaction, lightMatrixQt);
-    }
+    // int lightMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("light_matrix");
+    // if(lightMatrixLocaction >= 0) {
+    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(lightMatrixLocaction, lightMatrixQt);
+    // }
+    // int projectiveMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("projective_matrix");
+    // if(projectiveMatrixLocaction >= 0) {
+    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
+    // }
+    _shadowMapTechPtr->setLightMatrix(lightMatrix);
+    _shadowMapTechPtr->setProjectiveMatrix(projectMat);
 
-    int projectiveMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("projective_matrix");
-    if(projectiveMatrixLocaction >= 0) {
-        _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
-    }
 
     for(auto& body: _world->_bodies)
     {

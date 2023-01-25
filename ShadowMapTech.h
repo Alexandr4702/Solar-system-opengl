@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 #include <QGLContext>
 #include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <Eigen/Core>
 #include <iostream>
 
@@ -11,17 +12,12 @@ class ShadowMapFBO: public QOpenGLFunctions
 {
 public:
     ShadowMapFBO(QOpenGLContext* ctx_);
-
     ~ShadowMapFBO();
 
     bool Init(unsigned int Width, unsigned int Height, bool ForPCF = false);
-
     void BindForWriting();
-
     void BindForReading(GLenum TextureUnit);
-
     void resize(int WindowWidth, int WindowHeight);
-
 private:
     uint m_width = 0;
     uint m_height = 0;
@@ -29,10 +25,10 @@ private:
     GLuint m_shadowMap;
 };
 
-class CascadedShadowMapFBO: public QOpenGLFunctions
+class CascadedShadowMapFBO: public QOpenGLExtraFunctions
 {
 public:
-    CascadedShadowMapFBO();
+    CascadedShadowMapFBO(QOpenGLContext* ctx_);
 
     ~CascadedShadowMapFBO();
 
@@ -40,13 +36,14 @@ public:
 
     void BindForWriting(uint CascadeIndex);
 
-    void BindForReading();
+    void BindForReading(GLenum TextureUnit);
 
     void resize(int WindowWidth, int WindowHeight);
 
 private:
-    GLuint m_fbo;
-    GLuint m_shadowMap[3];
+    GLuint m_depthMapFBO;
+    GLuint m_depthCubemap;
+    uint32_t m_width, m_height;
 };
 
 class ShadowMapTech: public QOpenGLFunctions
@@ -58,42 +55,54 @@ class ShadowMapTech: public QOpenGLFunctions
     bool init()
     {
         _lightMatrixLocation = _shaderProgramTechMap.uniformLocation("light_matrix");
-        _textureLocation = _shaderProgramTechMap.uniformLocation("gShadowMap");
         _projectiveMatrixLocation = _shaderProgramTechMap.uniformLocation("projective_matrix");
 
         if (_lightMatrixLocation < 0 ||
-            _textureLocation < 0 ||
             _projectiveMatrixLocation < 0
             ) {
             std::cerr << "Unable to find location\n";
             return false;
         }
-
         return true;
     }
-    void setLightMatrix(Eigen::Matrix4f& mvp)
-    {
-        // Should i transpose matrix??
-        if(_lightMatrixLocation >= 0)
-            glUniformMatrix4fv(_lightMatrixLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
+
+    void setMatrixes(Eigen::Matrix4f& lightMatrix, Eigen::Matrix4f& prjectiveMatrix) {
+        setLightMatrix(lightMatrix);
+        setProjectiveMatrix(prjectiveMatrix);
     }
 
-    void setProjectiveMatrix(Eigen::Matrix4f& mvp)
+    void setLightMatrix(Eigen::Matrix4f& lightMatrix)
     {
-        // Should i transpose matrix??
         if(_lightMatrixLocation >= 0)
-            glUniformMatrix4fv(_projectiveMatrixLocation, 1, GL_TRUE, (const GLfloat*)mvp.data());
+            glUniformMatrix4fv(_lightMatrixLocation, 1, GL_FALSE, (const GLfloat*)lightMatrix.data());
     }
 
-    void SetTextureUnit(uint32_t TextureUnit)
+    void setProjectiveMatrix(Eigen::Matrix4f& prjectiveMatrix)
     {
-        if(_textureLocation >= 0)
-            glUniform1i(_textureLocation, TextureUnit);
+        if(_projectiveMatrixLocation >= 0)
+            glUniformMatrix4fv(_projectiveMatrixLocation, 1, GL_FALSE, (const GLfloat*)prjectiveMatrix.data());
     }
+
     QOpenGLShaderProgram _shaderProgramTechMap;
     int _lightMatrixLocation;
-    int _textureLocation;
     int _projectiveMatrixLocation;
+
+    uint _width ;
+    uint _height;
+};
+
+class PointShadowMapTech: public QOpenGLFunctions
+{
+    public:
+    PointShadowMapTech(QOpenGLContext* ctx_): QOpenGLFunctions(ctx_)
+    {
+    }
+    bool init()
+    {
+        return false;
+    }
+
+    QOpenGLShaderProgram _shaderProgramTechMap;
 
     uint _width ;
     uint _height;
