@@ -127,21 +127,12 @@ void GlSimulation::paintGL()
 //--- Prepe data
     Eigen::Matrix4f viewMat = _cam.getCameraMatrix().cast <float>();
     Eigen::Matrix4f projectMat = _cam.getProjetionMatrix().cast <float>();
-    Eigen::Vector3d camPos = _cam.getTranslation();
+    Eigen::Vector3f camPos = _cam.getTranslation().cast <float>();
 
     Eigen::Affine3f LightTransform;
     LightTransform.setIdentity();
     LightTransform.translate(Eigen::Vector3f::Zero());
-    Eigen::Matrix4f lightMatrix = LightTransform.matrix().transpose();
-    QMatrix4x4 lightMatrixQt(lightMatrix.data());
-
-    Eigen::Matrix4f v_matrix = viewMat.transpose();
-    QMatrix4x4 v_matrixQt(v_matrix.data());
-
-    Eigen::Matrix4f p_matrix = projectMat.transpose();
-    QMatrix4x4 p_matrixQt(p_matrix.data());
-
-    QVector3D camPosQt(camPos.x(), camPos.y(), camPos.z());
+    Eigen::Matrix4f lightMatrix = LightTransform.matrix();
 
 //--- Creating shadow map
     _shadowMapFBO->BindForWriting();
@@ -149,17 +140,8 @@ void GlSimulation::paintGL()
 
     _shadowMapTechPtr->_shaderProgramTechMap.bind();
 
-    // int lightMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("light_matrix");
-    // if(lightMatrixLocaction >= 0) {
-    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(lightMatrixLocaction, lightMatrixQt);
-    // }
-    // int projectiveMatrixLocaction = _shadowMapTechPtr->_shaderProgramTechMap.uniformLocation("projective_matrix");
-    // if(projectiveMatrixLocaction >= 0) {
-    //     _shadowMapTechPtr->_shaderProgramTechMap.setUniformValue(projectiveMatrixLocaction, p_matrixQt);
-    // }
     _shadowMapTechPtr->setLightMatrix(lightMatrix);
     _shadowMapTechPtr->setProjectiveMatrix(projectMat);
-
 
     for(auto& body: _world->_bodies)
     {
@@ -180,22 +162,22 @@ void GlSimulation::paintGL()
 
     int lightMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("light_matrix");
     if(lightMatrixLocaction_BodyShader >= 0) {
-        _shaderProgrammBody.setUniformValue(lightMatrixLocaction_BodyShader, lightMatrixQt);
+        glUniformMatrix4fv(lightMatrixLocaction_BodyShader, 1, GL_FALSE, (const GLfloat*)lightMatrix.data());
     }
 
     int viewMatrixLocaction = _shaderProgrammBody.uniformLocation("view_matrix");
     if(viewMatrixLocaction >= 0) {
-        _shaderProgrammBody.setUniformValue(viewMatrixLocaction, v_matrixQt);
+        glUniformMatrix4fv(viewMatrixLocaction, 1, GL_FALSE, (const GLfloat*)viewMat.data());
     }
 
     int projectiveMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("projective_matrix");
     if(projectiveMatrixLocaction_BodyShader >= 0) {
-        _shaderProgrammBody.setUniformValue(projectiveMatrixLocaction_BodyShader, p_matrixQt);
+        glUniformMatrix4fv(projectiveMatrixLocaction_BodyShader, 1, GL_FALSE, (const GLfloat*)projectMat.data());
     }
 
     int camMatrixLocaction = _shaderProgrammBody.uniformLocation("camPosition");
     if(camMatrixLocaction >= 0) {
-        _shaderProgrammBody.setUniformValue(camMatrixLocaction, camPosQt);
+        glUniform3fv(camMatrixLocaction, 1, camPos.data());
     }
 
     for(auto& body: _world->_bodies)
