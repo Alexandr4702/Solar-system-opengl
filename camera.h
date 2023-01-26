@@ -15,6 +15,12 @@
 #include "eigen/Eigen/Core"
 #include "eigen/Eigen/Geometry"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
+
 class Camera
 {
 public:
@@ -38,7 +44,6 @@ public:
     Eigen::Matrix4d getCameraMatrix() const;
     Eigen::Matrix4f getCameraProjectiveMatrix() const;
     void printCameraParam(std::ostream &out) const;
-    static Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
     void StartRotation(Eigen::Vector2d &mouseCoord);
 
 private:

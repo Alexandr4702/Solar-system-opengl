@@ -6,6 +6,13 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLExtraFunctions>
 #include <Eigen/Core>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "camera.h"
+
 #include <iostream>
 
 class ShadowMapFBO: public QOpenGLFunctions
@@ -34,7 +41,7 @@ public:
 
     bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
 
-    void BindForWriting(uint CascadeIndex);
+    void BindForWriting();
 
     void BindForReading(GLenum TextureUnit);
 
@@ -116,15 +123,96 @@ class ShadowMapTech: public QOpenGLFunctions
 class PointShadowMapTech: public QOpenGLFunctions
 {
     public:
-    PointShadowMapTech(QOpenGLContext* ctx_): QOpenGLFunctions(ctx_)
+    PointShadowMapTech(QOpenGLContext* ctx_): QOpenGLFunctions(ctx_), _shadowMapFBO(std::make_unique<CascadedShadowMapFBO>(ctx_))
     {
     }
-    bool init()
+    bool Init(unsigned int Width, unsigned int Height)
     {
+        _width = Width;
+        _height = Height;
+
+        _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
+
+        _sidesMatrixes[0] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        _sidesMatrixes[1] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        _sidesMatrixes[2] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f));
+        _sidesMatrixes[3] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f));
+        _sidesMatrixes[4] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        _sidesMatrixes[5] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+
+        _shadowMapFBO->Init(Width, Height);
+
+        _far_planeLocation = _shaderProgramTechMap.uniformLocation("_far_plane");
+        _lightPosLocation = _shaderProgramTechMap.uniformLocation("_lightPos");
+
+
+        for(int i = 0; i < 6; i++) {
+            _shadowMatrixesLocations[i] = _shaderProgramTechMap.uniformLocation(std::string("shadowMatrices[" + std::to_string(i) + "]").data());
+        }
+
+        if (_far_planeLocation < 0 ||
+            _lightPosLocation < 0
+            ) {
+            std::cerr << "Unable to find location\n";
+            return false;
+        }
+        return true;
+
         return false;
     }
 
+    void prepeBeforeGeneratingShadowMap ()
+    {
+        _shadowMapFBO->BindForWriting();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        _shaderProgramTechMap.bind();
+
+        if(_far_planeLocation > 0)
+            glUniform1f(_far_planeLocation, _farPlane);
+
+        if(_lightPosLocation > 0)
+            glUniform3fv(_lightPosLocation, 1,glm::value_ptr(_lightPos));
+
+        for(int i = 0; i < 6; i++) {
+            if(_shadowMatrixesLocations[i] > 0) {
+                glUniformMatrix4fv(_shadowMatrixesLocations[i], 1, GL_FALSE, glm::value_ptr(_sidesMatrixes[i]));
+            }
+        }
+
+    }
+    void preapeforReadingShadowMap(GLint textueUnit, int shadowMapLocation) {
+        // int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
+        if(shadowMapLocation >= 0) {
+            glUniform1i(shadowMapLocation, textueUnit);
+            _shadowMapFBO->BindForReading(GL_TEXTURE0 + textueUnit);
+        }
+    }
+
+    void resize(int Width, int Height) {
+        _width = Width;
+        _height = Height;
+        _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
+
+        _sidesMatrixes[0] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        _sidesMatrixes[1] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        _sidesMatrixes[2] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f));
+        _sidesMatrixes[3] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f));
+        _sidesMatrixes[4] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        _sidesMatrixes[5] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+
+        _shadowMapFBO->resize(_width, _height);
+    }
     QOpenGLShaderProgram _shaderProgramTechMap;
+    std::unique_ptr<CascadedShadowMapFBO> _shadowMapFBO;
+    glm::mat4 _sidesMatrixes[6];
+    glm::mat4 _projectiveMatrix;
+    glm::vec3 _lightPos;
+    float _farPlane = 25.0;
+    float _nearPlane = 1.0;
+
+    int _far_planeLocation = 0;
+    int _lightPosLocation = 0;
+    int _shadowMatrixesLocations[6] = {0};
 
     uint _width ;
     uint _height;

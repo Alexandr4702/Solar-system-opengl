@@ -20,6 +20,7 @@ in struct data_to_pass
 uniform sampler2D textures;
 out vec4 fragColor;
 uniform vec3 camPosition;
+uniform float far_plane;
 
 uniform vec3 ambient_texture;
 uniform vec3 diffuse_texture;
@@ -27,8 +28,9 @@ uniform vec3 specular_texture;
 uniform float shininess;
 
 uniform sampler2D shadowMap;
+// uniform samplerCube shadowMap;
 
-float CalcShadowFactor(vec4 LightSpacePos)
+float CalcShadowFactor(sampler2D shadowMap, vec4 LightSpacePos)
 {
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
     vec2 UVCoords;
@@ -41,6 +43,25 @@ float CalcShadowFactor(vec4 LightSpacePos)
         return 0.2;
     else
         return 1.0;
+}
+
+float PointsShadowCalculation(samplerCube shadowMap, vec3 fragPos)
+{
+    // get vector between fragment position and light position
+    vec3 fragToLight = fragPos - to_fs.lightPos.xyz;
+    // ise the fragment to light vector to sample from the depth map
+    float closestDepth = texture(shadowMap, fragToLight).x;
+    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
+    closestDepth *= far_plane;
+    // now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+    // test for shadows
+    float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+    // display closestDepth as debug (to visualize depth cubemap)
+    // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);
+
+    return shadow;
 }
 
 vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
@@ -98,7 +119,7 @@ void main()
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * 0.1;
-    texture_properties.diffuse = temp.xyz * 0.45 * vec3(CalcShadowFactor(to_fs.lightPos));
+    texture_properties.diffuse = temp.xyz * 0.45 * CalcShadowFactor(shadowMap, to_fs.lightPos);
     texture_properties.specular = temp.xyz * 0.45;
     texture_properties.shininess = 8;
 
