@@ -30,10 +30,16 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    _shadowMapTechPtr = std::make_unique<ShadowMapTech>(context());
+    _shadowMapTechPtr = std::make_unique<PointShadowMapTech>(context());
 
-    createShaderProgramFromFiles(_shaderProgrammBody, "../resources/shaders/Body/vertex_shader.vert", "../resources/shaders/Body/fragment_shader.frag");
-    createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadowMapGenerator/shadow_map_vertex.vert", "../resources/shaders/shadowMapGenerator/shadow_map_frag.frag");
+    createShaderProgramFromFiles(_shaderProgrammBody,
+    "../resources/shaders/Body/vertex_shader.vert",
+    "../resources/shaders/Body/fragment_shader.frag");
+    createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap,
+    "../resources/shaders/shadowMapGeneratorPointLight/shadow_map_vertex.vert",
+    "../resources/shaders/shadowMapGeneratorPointLight/shadow_map_geometry.geom",
+    "../resources/shaders/shadowMapGeneratorPointLight/shadow_map_frag.frag");
+    // createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadowMapGenerator/shadow_map_vertex.vert", "../resources/shaders/shadowMapGenerator/shadow_map_frag.frag");
 
     if(!_shadowMapTechPtr->Init(size().width(), size().height()))
         std::cerr << "blyatstcvo razvrat narkotiki \n";
@@ -141,6 +147,7 @@ void GlSimulation::paintGL()
 
 //---Draw body
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, size().width(), size().height());
     _shaderProgrammBody.bind();
 
 //---Set Common Variable
@@ -315,6 +322,53 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
     }
 
     if(!shaderProgramm_.addShader(&vertexShader))
+    {
+        cout << shaderProgramm_.log().toStdString() << " Shader compile programm problem\n";
+    }
+
+    if(!shaderProgramm_.addShader(&fragmentShader))
+    {
+        cout << shaderProgramm_.log().toStdString() << " Shader compile programm problem\n";
+    }
+
+    if(!shaderProgramm_.link())
+    {
+        cout << shaderProgramm_.log().toStdString() << " Shader compile programm problem\n";
+    }
+    return true;
+}
+
+bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProgramm_, std::string vertesShaderPath, std::string geometryShaderPath, std::string fragmentShaderPath)
+{
+    using namespace std;
+
+    QOpenGLShaderProgram ret;
+
+    QOpenGLShader vertexShader(QOpenGLShader::Vertex);
+    QOpenGLShader geometryShader(QOpenGLShader::Geometry);
+    QOpenGLShader fragmentShader(QOpenGLShader::Fragment);
+
+    if(!vertexShader.compileSourceFile(vertesShaderPath.c_str()))
+    {
+        cout << vertexShader.log().toStdString() << " asd\n";
+    }
+
+    if(!geometryShader.compileSourceFile(geometryShaderPath.c_str()))
+    {
+        cout << geometryShader.log().toStdString() << " asd\n";
+    }
+
+    if(!fragmentShader.compileSourceFile(fragmentShaderPath.c_str()))
+    {
+        cout << fragmentShader.log().toStdString() << " asd\n";
+    }
+
+    if(!shaderProgramm_.addShader(&vertexShader))
+    {
+        cout << shaderProgramm_.log().toStdString() << " Shader compile programm problem\n";
+    }
+
+    if(!shaderProgramm_.addShader(&geometryShader))
     {
         cout << shaderProgramm_.log().toStdString() << " Shader compile programm problem\n";
     }

@@ -45,7 +45,9 @@ public:
 
     void BindForReading(GLenum TextureUnit);
 
-    void resize(int WindowWidth, int WindowHeight);
+    void resize(int WindowWidth, int WindowHeight) {
+
+    }
 
 private:
     GLuint m_depthMapFBO;
@@ -128,8 +130,8 @@ class PointShadowMapTech: public QOpenGLFunctions
     }
     bool Init(unsigned int Width, unsigned int Height)
     {
-        _width = Width;
-        _height = Height;
+        // _width = Width;
+        // _height = Height;
 
         _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
 
@@ -140,10 +142,10 @@ class PointShadowMapTech: public QOpenGLFunctions
         _sidesMatrixes[4] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
         _sidesMatrixes[5] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
 
-        _shadowMapFBO->Init(Width, Height);
+        _shadowMapFBO->Init(_width, _height);
 
-        _far_planeLocation = _shaderProgramTechMap.uniformLocation("_far_plane");
-        _lightPosLocation = _shaderProgramTechMap.uniformLocation("_lightPos");
+        _far_planeLocation = _shaderProgramTechMap.uniformLocation("far_plane");
+        _lightPosLocation = _shaderProgramTechMap.uniformLocation("lightPos");
 
 
         for(int i = 0; i < 6; i++) {
@@ -160,7 +162,9 @@ class PointShadowMapTech: public QOpenGLFunctions
 
         return false;
     }
+    void setMatrixes(Eigen::Matrix4f& lightMatrix, Eigen::Matrix4f& prjectiveMatrix) {
 
+    }
     void prepeBeforeGeneratingShadowMap ()
     {
         _shadowMapFBO->BindForWriting();
@@ -189,8 +193,8 @@ class PointShadowMapTech: public QOpenGLFunctions
     }
 
     void resize(int Width, int Height) {
-        _width = Width;
-        _height = Height;
+        // _width = Width;
+        // _height = Height;
         _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
 
         _sidesMatrixes[0] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
@@ -206,7 +210,7 @@ class PointShadowMapTech: public QOpenGLFunctions
     std::unique_ptr<CascadedShadowMapFBO> _shadowMapFBO;
     glm::mat4 _sidesMatrixes[6];
     glm::mat4 _projectiveMatrix;
-    glm::vec3 _lightPos;
+    glm::vec3 _lightPos = {0, 0, 0};
     float _farPlane = 25.0;
     float _nearPlane = 1.0;
 
@@ -214,8 +218,8 @@ class PointShadowMapTech: public QOpenGLFunctions
     int _lightPosLocation = 0;
     int _shadowMatrixesLocations[6] = {0};
 
-    uint _width ;
-    uint _height;
+    uint _width = 1024;
+    uint _height = 1024;
 };
 
 #endif // __SHADOWMAP_H__

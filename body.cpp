@@ -199,7 +199,7 @@ bool Body::ImportModel(std::string pFile)
         for(uint32_t j = 0; j < 22; j++)
         {
 
-            std::cout << (scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) << " " << j << " " << i << " \n";
+            // std::cout << (scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) << " " << j << " " << i << " \n";
 
             if((scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) > 0)
             {

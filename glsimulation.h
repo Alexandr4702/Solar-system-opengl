@@ -43,11 +43,13 @@ private:
     void drawThread();
     // void drawCube();
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
+    bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string geometryShader, std::string fragmentShader);
+
     QOpenGLShaderProgram _shaderProgrammBody;
 
     // QOpenGLShaderProgram _shaderProgrammShadowMap;
     // std::unique_ptr<QOpenGLFramebufferObject> _shadowMapFrameBuffer;
-    std::unique_ptr<ShadowMapTech> _shadowMapTechPtr;
+    std::unique_ptr<PointShadowMapTech> _shadowMapTechPtr;
 
     std::shared_ptr<World> _world;
     Camera _cam;

@@ -21,8 +21,6 @@ out struct data_to_pass
     vec4 lightPos;
 } to_fs;
 
-uniform sampler2D shadowMap;
-
 void main()
 {
     vec4 worldPos = world_matrix * vec4(position, 1.0);

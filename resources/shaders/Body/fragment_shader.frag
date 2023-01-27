@@ -27,8 +27,8 @@ uniform vec3 diffuse_texture;
 uniform vec3 specular_texture;
 uniform float shininess;
 
-uniform sampler2D shadowMap;
-// uniform samplerCube shadowMap;
+// uniform sampler2D shadowMap;
+uniform samplerCube shadowMap;
 
 float CalcShadowFactor(sampler2D shadowMap, vec4 LightSpacePos)
 {
@@ -119,7 +119,7 @@ void main()
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * 0.1;
-    texture_properties.diffuse = temp.xyz * 0.45 * CalcShadowFactor(shadowMap, to_fs.lightPos);
+    texture_properties.diffuse = temp.xyz * 0.45 * PointsShadowCalculation(shadowMap, to_fs.positionWorld.xyz);
     texture_properties.specular = temp.xyz * 0.45;
     texture_properties.shininess = 8;
 
@@ -128,6 +128,7 @@ void main()
     // fragColor = texture(shadowMap, to_fs.v_texcoord);
     // fragColor = to_fs.lightPos;
     // fragColor = vec4(vec3(CalcShadowFactor(to_fs.lightPos)), 1);
+    fragColor = vec4(vec3(PointsShadowCalculation(shadowMap, to_fs.positionWorld.xyz)), 1);
 }
 //! [0]
 
