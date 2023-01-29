@@ -42,6 +42,8 @@ target_link_libraries(Qt-opengl-phys-enige
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARY}
     -lassimp
+    -lboost_program_options
+    -lboost_system
     )
 
 #set_target_properties(Qt-opengl-phys-enige PROPERTIES

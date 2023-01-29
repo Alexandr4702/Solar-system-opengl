@@ -103,6 +103,10 @@
         "__verbose_abort": "cpp",
         "matrixfunctions": "cpp",
         "nnls": "cpp",
-        "fft": "cpp"
+        "fft": "cpp",
+        "alignedvector3": "cpp",
+        "ranges": "cpp",
+        "span": "cpp",
+        "nonlinearoptimization": "cpp"
     }
 }

@@ -23,6 +23,11 @@
 #include <eigen/Eigen/Core>
 #include <eigen/Eigen/Geometry>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/detail/file_parser_error.hpp>
+#include <boost/program_options.hpp>
+
 #include "camera.h"
 
 struct VertexData
@@ -201,7 +206,7 @@ public:
      };
 
      Body(QOpenGLContext*);
-     Body(QOpenGLContext*, std::string filename, bool castsShadows = true);
+     Body(QOpenGLContext*, std::string filename, std::string objectName);
      Body(Body&&);
      Body& operator=(Body&&);
      Body(const Body&);
@@ -225,20 +230,19 @@ public:
 
      Eigen::Matrix4f getBodyMatrix() const;
 
+     const std::string& getName() const {
+          return name;
+     }
+
 private:
      bool ImportModel(std::string pFile);
      bool ImportTestModel();
 private:
      QOpenGLContext *ctx;
-     /*
-     @brief test func
-     */
-     void drawCube();
-
-     std::string name;
 
      Eigen::Matrix3d m_J;
      double mass;
+     std::string name;
 
      Eigen::Vector3d scale = {1, 1, 1};
 

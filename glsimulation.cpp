@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+namespace pt = boost ::property_tree;
+namespace po = boost::program_options;
+
 GlSimulation::GlSimulation(QWidget *parent): QOpenGLWidget(parent)
 {
     _world = std::make_shared <World> ();
@@ -39,7 +42,6 @@ void GlSimulation::initializeGL()
     "../resources/shaders/shadowMapGeneratorPointLight/shadow_map_vertex.vert",
     "../resources/shaders/shadowMapGeneratorPointLight/shadow_map_geometry.geom",
     "../resources/shaders/shadowMapGeneratorPointLight/shadow_map_frag.frag");
-    // createShaderProgramFromFiles(_shadowMapTechPtr->_shaderProgramTechMap, "../resources/shaders/shadowMapGenerator/shadow_map_vertex.vert", "../resources/shaders/shadowMapGenerator/shadow_map_frag.frag");
 
     if(!_shadowMapTechPtr->Init(size().width(), size().height()))
         std::cerr << "blyatstcvo razvrat narkotiki \n";
@@ -48,67 +50,11 @@ void GlSimulation::initializeGL()
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
     float BodyScaleFactor = 1.0 / 299792458.0 * 1e7;
 
-    Body Sun(this->context(), "../resources/models/Sun/Sun.obj", false);
-    float SunScale = 695700 * 1e3 * PlanetScaleFactor / 4;
-    Sun.setBodyScale({SunScale, SunScale, SunScale});
+    // Body Earth(this->context(), "../resources/settings/Earth.json");
 
-    Body Mercury(this->context(), "../resources/models/Mercury/Mercury.obj");
-    float MercuryScale = 2439.7 * 1e3 * PlanetScaleFactor;
-    Mercury.setBodyScale({MercuryScale, MercuryScale, MercuryScale});
+    ReadBodiesFromJson("../resources/settings/BodiesList.json");
 
-    float MercuryPos = 69816900 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d MercuryPosVec({0, 0, MercuryPos});
-    Mercury.setBodyPosition(MercuryPosVec);
-
-    Body Earth(this->context(), "../resources/models/earth.obj");
-    //6371000m to the light mseconds 299792458
-    float EarthScale = 6371 * 1e3 * PlanetScaleFactor;
-
-    float EarthPos = 149.6 * 1e6 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d EarthPosVec({0, 0, -5});
-    Earth.setBodyPosition(EarthPosVec);
-
-    Body Moon(this->context(), "../resources/models/Moon/Moon.obj");
-    float MoonScale = 1737.4 * 1e3 * PlanetScaleFactor;
-
-    float MoonPosRelativeEarth = 400000 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d MoonPosRelativeEarthVec({0, 0, MoonPosRelativeEarth});
-    Moon.setBodyPosition(MoonPosRelativeEarthVec + EarthPosVec);
-
-    Body Neptune(this->context(), "../resources/models/Neptune/Neptune.obj");
-    float NeptuneScale = 24622 * 1e3 * PlanetScaleFactor;
-    Neptune.setBodyScale({NeptuneScale, NeptuneScale, NeptuneScale});
-
-    float NeptunePos = 4503443661.0 * 1e3 * DisctaneScaleFactor;
-    Eigen::Vector3d NeptunePosVec({0, 0, NeptunePos});
-    Neptune.setBodyPosition(NeptunePosVec);
-
-    Body Cubesat6u(this->context(), "../resources/models/CubSat6U.obj");
-    // by default scale is mm
-    // float CubesatScale = 1e-3 * BodyScaleFactor;
-    float CubesatScale = 1e-3 * 1;
-    Cubesat6u.setBodyScale({CubesatScale, CubesatScale, CubesatScale});
-    Eigen::Vector3d Cubesat6uPosVec = Eigen::Vector3d(500 * 1e3, 0, 0) * DisctaneScaleFactor + EarthPosVec + Eigen::Vector3d(EarthScale, 0, 0);
-    Cubesat6u.setBodyPosition(Cubesat6uPosVec);
-
-    Cubesat6u.setBodyPosition(Eigen::Vector3d(0,0, -2));
-
-    _world->_bodies.emplace_back(Cubesat6u);
-
-    _world->_bodies.emplace_back(Sun);
-    _world->_bodies.emplace_back(Mercury);
-    _world->_bodies.emplace_back(Earth);
-    _world->_bodies.emplace_back(Moon);
-    _world->_bodies.emplace_back(Neptune);
-    // _world->_bodies.emplace_back(Cube);
-
-    // _cam.setTranslationCam(Ea+rth.getBodyPosition());
-    std::cerr << Earth.getBodyPosition().transpose() << "\n";
-    std::cerr << Moon.getBodyPosition().transpose() << "\n";
-    std::cerr << _cam.getTranslation().transpose() << "\n";
-
-    // double angle = 90 * M_PI / 180.0;
-    // _cam.setCamRotation(Eigen::Quaterniond(cos(angle / 2), 0, sin(angle / 2), 0));
+    // _world->_bodies.emplace_back(Earth);
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -387,6 +333,40 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
     }
     return true;
 }
+
+void GlSimulation::ReadBodiesFromJson(std::string jsonName) {
+    pt ::ptree BodyList;
+
+    try {
+        read_json(jsonName, BodyList);
+    }
+    catch (pt ::json_parser_error &e) {
+        std ::cout << "Failed to parse the json string.\n" << e.what();
+        throw;
+    }
+    catch (...) {
+        std ::cout << "Failed !!!\n";
+        throw;
+    }
+
+    auto BodiesIt = BodyList.find("bodies");
+
+    for(auto& body: BodiesIt->second) {
+        auto& elem = body.second;
+
+        auto nameIt = elem.find("name");
+        auto jsonPathIt =  elem.find("jsonPath");
+
+        if(
+            nameIt == elem.not_found()
+            || jsonPathIt == elem.not_found()
+        )throw;
+
+        Body newElement(context(), jsonPathIt->second.data(), nameIt->second.data());
+        _world->_bodies.emplace_back(newElement);
+    }
+}
+
 
 void GlSimulation::resizeGL(int width, int height)
 {

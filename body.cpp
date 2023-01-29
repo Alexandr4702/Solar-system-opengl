@@ -2,14 +2,71 @@
 
 #include <iostream>
 
+namespace pt = boost ::property_tree;
+namespace po = boost::program_options;
+
 Body::Body(QOpenGLContext* context): ctx(context)
 {
     // ImportTestModel();
 }
 
-Body::Body(QOpenGLContext* context, std::string filename, bool castsShadows): ctx(context), m_castsShadows(castsShadows)
+Body::Body(QOpenGLContext* context, std::string filename, std::string objectName): ctx(context)
 {
-    ImportModel(filename);
+    pt ::ptree SettingsTree;
+
+    try {
+        read_json(filename, SettingsTree);
+    }
+    catch (pt ::json_parser_error &e) {
+        std ::cout << "Failed to parse the json string.\n" << e.what();
+        throw;
+    }
+    catch (...) {
+        std ::cout << "Failed !!!\n";
+        throw;
+    }
+    auto positionIt = SettingsTree.find("position");
+    auto velocityIt = SettingsTree.find("velocity");
+    auto quaternionIt = SettingsTree.find("quaternion");
+    auto angularVelocityIt = SettingsTree.find("angularVelocity");
+    auto massIt = SettingsTree.find("mass");
+    auto scaleIt = SettingsTree.find("scale");
+    auto castsShadowsIt = SettingsTree.find("castsShadows");
+    auto modelPathIt = SettingsTree.find("modelPath");
+
+    if (positionIt == SettingsTree.not_found()
+        || velocityIt == SettingsTree.not_found()
+        || quaternionIt == SettingsTree.not_found()
+        || angularVelocityIt == SettingsTree.not_found()
+        || massIt == SettingsTree.not_found()
+        || scaleIt == SettingsTree.not_found()
+        || castsShadowsIt == SettingsTree.not_found()
+        || modelPathIt == SettingsTree.not_found()
+        ) throw;
+
+
+    postition[0] = std::next(positionIt->second.begin(), 0)->second.get_value<double>();
+    postition[1] = std::next(positionIt->second.begin(), 1)->second.get_value<double>();
+    postition[2] = std::next(positionIt->second.begin(), 2)->second.get_value<double>();
+
+    velocity[0] = std::next(velocityIt->second.begin(), 0)->second.get_value<double>();
+    velocity[1] = std::next(velocityIt->second.begin(), 1)->second.get_value<double>();
+    velocity[2] = std::next(velocityIt->second.begin(), 2)->second.get_value<double>();
+
+    orientation.w() = std::next(quaternionIt->second.begin(), 0)->second.get_value<double>();
+    orientation.x() = std::next(quaternionIt->second.begin(), 1)->second.get_value<double>();
+    orientation.y() = std::next(quaternionIt->second.begin(), 2)->second.get_value<double>();
+    orientation.z() = std::next(quaternionIt->second.begin(), 3)->second.get_value<double>();
+
+    scale[0] = std::next(scaleIt->second.begin(), 0)->second.get_value<double>();
+    scale[1] = std::next(scaleIt->second.begin(), 1)->second.get_value<double>();
+    scale[2] = std::next(scaleIt->second.begin(), 2)->second.get_value<double>();
+
+    mass = massIt->second.get_value<double>();
+
+    m_castsShadows = castsShadowsIt->second.get_value<int>();
+
+    ImportModel(modelPathIt->second.data());
 }
 
 Body::Body(Body&& body)

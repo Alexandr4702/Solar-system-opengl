@@ -21,6 +21,10 @@
 #include "camera.h"
 #include "ShadowMapTech.h"
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/detail/file_parser_error.hpp>
+
 class GlSimulation : public QOpenGLWidget, public QOpenGLFunctions
 {
     Q_OBJECT
@@ -33,22 +37,18 @@ protected:
     void resizeGL(int width, int height);
     void paintGL();
     void paintThreadfoo();
-    void initShader();
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
 private:
-    void drawThread();
-    // void drawCube();
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string geometryShader, std::string fragmentShader);
+    void ReadBodiesFromJson(std::string jsonName);
 
     QOpenGLShaderProgram _shaderProgrammBody;
 
-    // QOpenGLShaderProgram _shaderProgrammShadowMap;
-    // std::unique_ptr<QOpenGLFramebufferObject> _shadowMapFrameBuffer;
     std::unique_ptr<PointShadowMapTech> _shadowMapTechPtr;
 
     std::shared_ptr<World> _world;
