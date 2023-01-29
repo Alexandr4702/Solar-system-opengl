@@ -12,6 +12,7 @@ in struct data_to_pass
     vec2 v_texcoord;
     vec3 normal;
     vec4 positionWorld;
+
     vec4 positionCam;
     vec4 posProjected;
     vec4 lightSystemCoordinateFragPos;
@@ -31,6 +32,15 @@ vec3 LightPosition = {0, 0, 0};
 uniform sampler2D shadowMap;
 uniform samplerCube PointShadowMap;
 
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
 float CalcShadowFactor(sampler2D shadowMap, vec4 LightSpacePos)
 {
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
@@ -41,29 +51,34 @@ float CalcShadowFactor(sampler2D shadowMap, vec4 LightSpacePos)
     float Depth = texture(shadowMap, UVCoords).x;
     // Depth = texture(shadowMap, vec2(0.5, 0.5)).x;
     // return Depth * 1000 - 999.2;
-    // return Depth;
-    if (Depth < z - 0.00001)
-        return 0.2;
-    else
-        return 1.0;
+    return (Depth < z - 0.00001) ? 0: 1;
 }
 
 float PointsShadowCalculation(samplerCube shadowMap, vec3 fragPos)
 {
-    // get vector between fragment position and light position
     vec3 fragToLight = fragPos - LightPosition.xyz;
-    // ise the fragment to light vector to sample from the depth map
     float closestDepth = texture(shadowMap, fragToLight).x;
-    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
     closestDepth *= 25;
-    // now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
-    // test for shadows
-    float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
-    float shadow = currentDepth -  bias > closestDepth ? 0.0 : 1.0;
-    // display closestDepth as debug (to visualize depth cubemap)
-    // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);
-    return shadow;
+
+    // float bias = max(0.05 * (1.0 - dot(to_fs.normal, fragToLight)), 0.005);
+    // float shadow = currentDepth -  bias > closestDepth ? 0.0 : 1.0;
+
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+    float viewDistance = length(to_fs.positionCam.xyz - fragPos);
+    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(shadowMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= far_plane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+
+    return 1 - shadow;
 }
 
 vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
@@ -113,7 +128,7 @@ vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 v
     vec3 lightDir = normalize(lightPos - FragPos);
     return PhongLight(Normal, lightDir, FragPos, lightColor, viewPos, material);
 }
-//! [0]
+
 void main()
 {
     vec3 lightColor = {1, 1, 1};
@@ -122,7 +137,7 @@ void main()
     texture_properties.ambient = temp.xyz * 0.1;
     // texture_properties.diffuse = temp.xyz * 0.45 * CalcShadowFactor(shadowMap, to_fs.lightSystemCoordinateFragPos);
     texture_properties.diffuse = temp.xyz * 0.45 * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
-    texture_properties.specular = temp.xyz * 0.45;
+    texture_properties.specular = temp.xyz * 0.45 * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
     texture_properties.shininess = 8;
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.positionWorld.xyz, lightColor, camPosition, texture_properties);
@@ -132,5 +147,4 @@ void main()
     // fragColor = vec4(vec3(CalcShadowFactor(shadowMap, to_fs.lightSystemCoordinateFragPos)), 1);
     // fragColor = vec4(vec3(PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz)), 1);
 }
-//! [0]
 
