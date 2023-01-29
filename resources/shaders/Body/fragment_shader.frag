@@ -61,24 +61,24 @@ float PointsShadowCalculation(samplerCube shadowMap, vec3 fragPos)
     closestDepth *= 25;
     float currentDepth = length(fragToLight);
 
-    // float bias = max(0.05 * (1.0 - dot(to_fs.normal, fragToLight)), 0.005);
-    // float shadow = currentDepth -  bias > closestDepth ? 0.0 : 1.0;
+    float bias = max(0.05 * (1.0 - dot(to_fs.normal, fragToLight)), 0.005);
+    float shadow = currentDepth -  bias > closestDepth ? 0.0 : 1.0;
 
-    float shadow = 0.0;
-    float bias = 0.15;
-    int samples = 20;
-    float viewDistance = length(to_fs.positionCam.xyz - fragPos);
-    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
-    for(int i = 0; i < samples; ++i)
-    {
-        float closestDepth = texture(shadowMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        closestDepth *= far_plane;   // undo mapping [0;1]
-        if(currentDepth - bias > closestDepth)
-            shadow += 1.0;
-    }
-    shadow /= float(samples);
+    // float shadow = 0.0;
+    // float bias = 0.15;
+    // int samples = 20;
+    // float viewDistance = length(to_fs.positionCam.xyz - fragPos);
+    // float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    // for(int i = 0; i < samples; ++i)
+    // {
+    //     float closestDepth = texture(shadowMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+    //     closestDepth *= far_plane;   // undo mapping [0;1]
+    //     if(currentDepth - bias > closestDepth)
+    //         shadow += 1.0;
+    // }
+    // shadow /= float(samples);
 
-    return 1 - shadow;
+    return shadow;
 }
 
 vec4 PhongLight(vec3 Normal, vec3 lightDir, vec3 FragPos, vec3 lightColor, vec3 viewPos, texture_Pr material)
