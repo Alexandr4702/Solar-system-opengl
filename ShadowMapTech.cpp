@@ -165,8 +165,8 @@ bool CascadedShadowMapFBO::Init(unsigned int WindowWidth, unsigned int WindowHei
 
 void CascadedShadowMapFBO::BindForWriting()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
     glViewport(0, 0, m_width, m_height);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
 }
 
 void CascadedShadowMapFBO::BindForReading(GLenum TextureUnit)

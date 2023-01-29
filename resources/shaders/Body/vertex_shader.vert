@@ -18,7 +18,7 @@ out struct data_to_pass
     vec4 positionWorld;
     vec4 positionCam;
     vec4 posProjected;
-    vec4 lightPos;
+    vec4 lightSystemCoordinateFragPos;
 } to_fs;
 
 void main()
@@ -27,7 +27,7 @@ void main()
     vec4 posCam   = view_matrix * worldPos;
     gl_Position = projective_matrix * posCam;
 
-    to_fs.lightPos = projective_matrix * light_matrix * worldPos;
+    to_fs.lightSystemCoordinateFragPos = projective_matrix * light_matrix * worldPos;
 
     to_fs.v_texcoord = texture_coordinate;
     to_fs.normal     = mat3(world_matrix) * normal;

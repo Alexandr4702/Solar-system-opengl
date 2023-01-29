@@ -147,7 +147,6 @@ class PointShadowMapTech: public QOpenGLFunctions
         _far_planeLocation = _shaderProgramTechMap.uniformLocation("far_plane");
         _lightPosLocation = _shaderProgramTechMap.uniformLocation("lightPos");
 
-
         for(int i = 0; i < 6; i++) {
             _shadowMatrixesLocations[i] = _shaderProgramTechMap.uniformLocation(std::string("shadowMatrices[" + std::to_string(i) + "]").data());
         }
@@ -175,7 +174,7 @@ class PointShadowMapTech: public QOpenGLFunctions
             glUniform1f(_far_planeLocation, _farPlane);
 
         if(_lightPosLocation > 0)
-            glUniform3fv(_lightPosLocation, 1,glm::value_ptr(_lightPos));
+            glUniform3fv(_lightPosLocation, 1, glm::value_ptr(_lightPos));
 
         for(int i = 0; i < 6; i++) {
             if(_shadowMatrixesLocations[i] > 0) {
@@ -195,14 +194,14 @@ class PointShadowMapTech: public QOpenGLFunctions
     void resize(int Width, int Height) {
         // _width = Width;
         // _height = Height;
-        _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
+        // _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
 
-        _sidesMatrixes[0] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-        _sidesMatrixes[1] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-        _sidesMatrixes[2] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f));
-        _sidesMatrixes[3] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f));
-        _sidesMatrixes[4] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-        _sidesMatrixes[5] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        // _sidesMatrixes[5] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        // _sidesMatrixes[4] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        // _sidesMatrixes[3] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f));
+        // _sidesMatrixes[2] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f));
+        // _sidesMatrixes[1] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
+        // _sidesMatrixes[0] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
 
         _shadowMapFBO->resize(_width, _height);
     }

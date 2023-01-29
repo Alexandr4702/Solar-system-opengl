@@ -143,6 +143,7 @@ void GlSimulation::paintGL()
     {
         body.draw(_shadowMapTechPtr->_shaderProgramTechMap);
     }
+    // return;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 //---Draw body
@@ -151,11 +152,16 @@ void GlSimulation::paintGL()
     _shaderProgrammBody.bind();
 
 //---Set Common Variable
-    int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
-    int shadowMapTexutreUnit = 3;
+    int shadowMapLocation = _shaderProgrammBody.uniformLocation("PointShadowMap");
+    int shadowMapTexutreUnit = 13;
     if(shadowMapLocation >= 0) {
         glUniform1i(shadowMapLocation, shadowMapTexutreUnit);
         _shadowMapTechPtr->_shadowMapFBO->BindForReading(GL_TEXTURE0 + shadowMapTexutreUnit);
+    }
+
+    int far_planeLocaction_BodyShader = _shaderProgrammBody.uniformLocation("far_plane");
+    if(far_planeLocaction_BodyShader >= 0) {
+        glUniform1f(far_planeLocaction_BodyShader, _shadowMapTechPtr->_farPlane);
     }
 
     int lightMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("light_matrix");

@@ -11,5 +11,9 @@ uniform mat4 light_matrix;
 void main()
 {
     gl_Position = projective_matrix * light_matrix * world_matrix * vec4(position, 1.0);
+
+    // gl_Position = vec4(0.5, 0.5, 0.0, 1);
+    // gl_Position[2] = -0.8;
+    // gl_Position[3] = 1;
     // TexCoordOut = texture_coordinate;
 }
