@@ -12,10 +12,10 @@ in struct data_to_pass
     vec2 v_texcoord;
     vec3 normal;
     vec4 positionWorld;
-
-    vec4 positionCam;
     vec4 posProjected;
     vec4 lightSystemCoordinateFragPos;
+
+    vec4 positionCam;
 } to_fs;
 
 uniform sampler2D textures;

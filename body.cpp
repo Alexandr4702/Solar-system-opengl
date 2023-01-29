@@ -7,9 +7,8 @@ Body::Body(QOpenGLContext* context): ctx(context)
     // ImportTestModel();
 }
 
-Body::Body(QOpenGLContext* context, std::string filename): ctx(context)
+Body::Body(QOpenGLContext* context, std::string filename, bool castsShadows): ctx(context), m_castsShadows(castsShadows)
 {
-
     ImportModel(filename);
 }
 
@@ -17,7 +16,7 @@ Body::Body(Body&& body)
 {
     using namespace std;
     mass = body.mass;
-    J = move(body.J);
+    m_J = move(body.m_J);
     scale = move(body.scale);
     postition = move(body.postition);
     velocity = move(body.velocity);
@@ -26,6 +25,7 @@ Body::Body(Body&& body)
     angularVelocity = move(body.angularVelocity);
     angularAcceleration = move(body.angularAcceleration);
     meshes = move(body.meshes);
+    m_castsShadows = body.m_castsShadows;
 
     ctx = body.ctx;
     body.ctx = nullptr;
@@ -35,7 +35,7 @@ Body& Body::operator=(Body&& body)
 {
     using namespace std;
     mass = body.mass;
-    J = move(body.J);
+    m_J = move(body.m_J);
     scale = move(body.scale);
     postition = move(body.postition);
     velocity = move(body.velocity);
@@ -53,7 +53,7 @@ Body& Body::operator=(Body&& body)
 Body::Body(const Body& body):meshes(body.meshes)
 {
     mass = body.mass;
-    J = body.J;
+    m_J = body.m_J;
     scale = (body.scale);
     postition = (body.postition);
     velocity = (body.velocity);
@@ -68,7 +68,7 @@ Body::Body(const Body& body):meshes(body.meshes)
 Body& Body::operator=(const Body & body)
 {
     mass = body.mass;
-    J = body.J;
+    m_J = body.m_J;
     scale = (body.scale);
     postition = (body.postition);
     velocity = (body.velocity);
@@ -87,8 +87,11 @@ Body::~Body()
 
 }
 
-void Body::draw(QOpenGLShaderProgram& program)
+void Body::draw(QOpenGLShaderProgram& program, RenderType type)
 {
+    if(!m_castsShadows && type == RenderType::SHADOW_RENDER)
+        return;
+
     Eigen::Matrix4f m_matrix = getBodyMatrix().transpose();
     QMatrix4x4 m_matrixQt(m_matrix.data());
     program.setUniformValue("world_matrix", m_matrixQt);

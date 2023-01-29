@@ -100,6 +100,9 @@
         "locale": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "__verbose_abort": "cpp"
+        "__verbose_abort": "cpp",
+        "matrixfunctions": "cpp",
+        "nnls": "cpp",
+        "fft": "cpp"
     }
 }

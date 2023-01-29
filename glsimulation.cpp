@@ -48,8 +48,8 @@ void GlSimulation::initializeGL()
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
     float BodyScaleFactor = 1.0 / 299792458.0 * 1e7;
 
-    Body Sun(this->context(), "../resources/models/Sun/Sun.obj");
-    float SunScale = 695700 * 1e3 * PlanetScaleFactor;
+    Body Sun(this->context(), "../resources/models/Sun/Sun.obj", false);
+    float SunScale = 695700 * 1e3 * PlanetScaleFactor / 4;
     Sun.setBodyScale({SunScale, SunScale, SunScale});
 
     Body Mercury(this->context(), "../resources/models/Mercury/Mercury.obj");
@@ -63,7 +63,6 @@ void GlSimulation::initializeGL()
     Body Earth(this->context(), "../resources/models/earth.obj");
     //6371000m to the light mseconds 299792458
     float EarthScale = 6371 * 1e3 * PlanetScaleFactor;
-    // Earth.setBodyScale({EarthScale, EarthScale, EarthScale});
 
     float EarthPos = 149.6 * 1e6 * 1e3 * DisctaneScaleFactor;
     Eigen::Vector3d EarthPosVec({0, 0, -5});
@@ -71,12 +70,10 @@ void GlSimulation::initializeGL()
 
     Body Moon(this->context(), "../resources/models/Moon/Moon.obj");
     float MoonScale = 1737.4 * 1e3 * PlanetScaleFactor;
-    // Moon.setBodyScale({MoonScale, MoonScale, MoonScale});
 
     float MoonPosRelativeEarth = 400000 * 1e3 * DisctaneScaleFactor;
     Eigen::Vector3d MoonPosRelativeEarthVec({0, 0, MoonPosRelativeEarth});
     Moon.setBodyPosition(MoonPosRelativeEarthVec + EarthPosVec);
-    Moon.setBodyPosition(Eigen::Vector3d(-1.1,0,-3));
 
     Body Neptune(this->context(), "../resources/models/Neptune/Neptune.obj");
     float NeptuneScale = 24622 * 1e3 * PlanetScaleFactor;
@@ -98,7 +95,7 @@ void GlSimulation::initializeGL()
 
     _world->_bodies.emplace_back(Cubesat6u);
 
-    // _world->_bodies.emplace_back(Sun);
+    _world->_bodies.emplace_back(Sun);
     _world->_bodies.emplace_back(Mercury);
     _world->_bodies.emplace_back(Earth);
     _world->_bodies.emplace_back(Moon);
@@ -141,7 +138,7 @@ void GlSimulation::paintGL()
 
     for(auto& body: _world->_bodies)
     {
-        body.draw(_shadowMapTechPtr->_shaderProgramTechMap);
+        body.draw(_shadowMapTechPtr->_shaderProgramTechMap, Body::RenderType::SHADOW_RENDER);
     }
     // return;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

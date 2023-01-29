@@ -194,14 +194,20 @@ class Mesh : public QOpenGLFunctions
 class Body
 {
 public:
+
+     enum class RenderType: uint8_t {
+          SHADOW_RENDER,
+          NORMAL_RENDER,
+     };
+
      Body(QOpenGLContext*);
-     Body(QOpenGLContext*, std::string filename);
+     Body(QOpenGLContext*, std::string filename, bool castsShadows = true);
      Body(Body&&);
      Body& operator=(Body&&);
      Body(const Body&);
      Body& operator=(const Body&);
      ~Body();
-     void draw(QOpenGLShaderProgram& program);
+     void draw(QOpenGLShaderProgram& program, RenderType type = RenderType::NORMAL_RENDER);
      void update();
 
      void setBodyPosition(Eigen::Vector3d&);
@@ -229,7 +235,9 @@ private:
      */
      void drawCube();
 
-     Eigen::Matrix3d J;
+     std::string name;
+
+     Eigen::Matrix3d m_J;
      double mass;
 
      Eigen::Vector3d scale = {1, 1, 1};
@@ -245,6 +253,7 @@ private:
      Eigen::Vector3d angularVelocity = {0, 0, 0};
      Eigen::Vector3d angularAcceleration = {0, 0, 0};
      mutable std::mutex mtx;
+     bool m_castsShadows = true;
 
      std::vector<Mesh> meshes;
 };
