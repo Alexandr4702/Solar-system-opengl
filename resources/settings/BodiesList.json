@@ -1,0 +1,13 @@
+{
+    "bodies": [
+    {
+        "name": "Earth",
+        "jsonPath": "../resources/settings/Earth.json"
+    },
+    {
+        "name": "Sun",
+        "jsonPath": "../resources/settings/Sun.json"
+    }
+    ]
+
+}

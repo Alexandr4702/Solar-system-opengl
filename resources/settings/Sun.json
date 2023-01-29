@@ -1,0 +1,14 @@
+{
+    "position": [0 , 0, 0],
+    "velocity": [0, 0, 0],
+    "quaternion": [1.0, 0, 0, 0],
+    "angularVelocity": [0, 0, 0],
+    "mass": 1,
+    "shaderName": "SomeShader",
+    "scale": [1, 1, 1],
+    "type": "Planet",
+    "castsShadows": 0,
+    "modelPath": "../resources/models/Sun/Sun.obj",
+    "tensorOfInertion": [[1, 0, 0], [0, 1, 0], [0 ,0, 1]]
+}
+
