@@ -7,10 +7,9 @@ namespace po = boost::program_options;
 
 Body::Body(QOpenGLContext* context): ctx(context)
 {
-    // ImportTestModel();
 }
 
-Body::Body(QOpenGLContext* context, std::string filename, std::string objectName): ctx(context)
+Body::Body(QOpenGLContext* context, std::string filename, std::string objectName): ctx(context), name(objectName)
 {
     pt ::ptree SettingsTree;
 
@@ -83,6 +82,7 @@ Body::Body(Body&& body)
     angularAcceleration = move(body.angularAcceleration);
     meshes = move(body.meshes);
     m_castsShadows = body.m_castsShadows;
+    name = move(body.name);
 
     ctx = body.ctx;
     body.ctx = nullptr;
@@ -101,6 +101,8 @@ Body& Body::operator=(Body&& body)
     angularVelocity = move(body.angularVelocity);
     angularAcceleration = move(body.angularAcceleration);
     meshes = move(body.meshes);
+    m_castsShadows = body.m_castsShadows;
+    name = move(body.name);
 
     ctx = body.ctx;
     body.ctx = nullptr;
@@ -118,6 +120,8 @@ Body::Body(const Body& body):meshes(body.meshes)
     orientation = (body.orientation);
     angularVelocity = (body.angularVelocity);
     angularAcceleration = (body.angularAcceleration);
+    m_castsShadows = body.m_castsShadows;
+    name = body.name;
 
     ctx = body.ctx;
 }
@@ -134,6 +138,8 @@ Body& Body::operator=(const Body & body)
     angularVelocity = (body.angularVelocity);
     angularAcceleration = (body.angularAcceleration);
     meshes = body.meshes;
+    m_castsShadows = body.m_castsShadows;
+    name = body.name;
 
     ctx = body.ctx;
     return *this;

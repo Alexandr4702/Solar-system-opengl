@@ -135,7 +135,6 @@ void main()
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * 0.1;
-    // texture_properties.diffuse = temp.xyz * 0.45 * CalcShadowFactor(shadowMap, to_fs.lightSystemCoordinateFragPos);
     texture_properties.diffuse = temp.xyz * 0.45 * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
     texture_properties.specular = temp.xyz * 0.45 * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
     texture_properties.shininess = 8;

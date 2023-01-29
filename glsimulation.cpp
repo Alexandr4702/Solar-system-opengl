@@ -50,11 +50,16 @@ void GlSimulation::initializeGL()
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
     float BodyScaleFactor = 1.0 / 299792458.0 * 1e7;
 
-    // Body Earth(this->context(), "../resources/settings/Earth.json");
-
     ReadBodiesFromJson("../resources/settings/BodiesList.json");
 
-    // _world->_bodies.emplace_back(Earth);
+    auto EarthIt = find_if(_world->_bodies.begin(), _world->_bodies.end(), [](auto& one) {
+        return one.getName() == "Earth";
+    });
+
+    if(EarthIt != _world->_bodies.end()) {
+        Eigen::Vector3d pos = EarthIt->getBodyPosition();
+        _cam.setTranslationCam(pos);
+    }
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -363,7 +368,7 @@ void GlSimulation::ReadBodiesFromJson(std::string jsonName) {
         )throw;
 
         Body newElement(context(), jsonPathIt->second.data(), nameIt->second.data());
-        _world->_bodies.emplace_back(newElement);
+        _world->_bodies.emplace_back(std::move(newElement));
     }
 }
 

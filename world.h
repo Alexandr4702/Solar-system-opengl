@@ -1,8 +1,9 @@
 #ifndef WORLD_H
 #define WORLD_H
 #include <vector>
+#include <string>
 #include <unordered_map>
-
+#include <set>
 #include "body.h"
 
 /*
