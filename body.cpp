@@ -243,7 +243,7 @@ bool Body::ImportModel(std::string pFile)
     aiString texture_path;
     std::filesystem::path path_to_file(pFile);
 
-    std::vector< std::tuple<std::shared_ptr<QOpenGLTexture>, unsigned int, QImage>> textures;
+    std::vector< std::tuple<std::shared_ptr<QOpenGLTexture>, unsigned int, QImage, uint32_t>> textures;
 
     const aiScene* scene_ = importer.ReadFile( pFile,
                                 aiProcess_Triangulate            |
@@ -270,17 +270,17 @@ bool Body::ImportModel(std::string pFile)
             if((scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) > 0)
             {
                 unsigned int texture_index;
+
                 scene_->mMaterials[i]->GetTexture(static_cast<aiTextureType> (j), 0, &texture_path, NULL, &texture_index);
                 QImage texture_image;
                 // std::cout << path_to_file.parent_path().string() << "\n";
                 QString path_to_texture = QString(path_to_file.parent_path().string().c_str()) + QString("/") + QString(texture_path.C_Str());
-                qDebug() << path_to_texture;
                 texture_image = QImage(path_to_texture);
 
                 if (!texture_image.isNull())
                 {
                     std::shared_ptr<QOpenGLTexture> texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(texture_image.mirrored()));
-                    textures.push_back({texture, texture_index, texture_image});
+                    textures.push_back({texture, texture_index, texture_image, i});
                 } else{
                     std::cerr << "Unable to load textures\n";
                     return false;
@@ -302,6 +302,29 @@ bool Body::ImportModel(std::string pFile)
         mesh.texture = std::get<0> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
         unsigned int texture_index = std::get<1> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
         mesh.raw_texture = std::get<2> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
+        uint32_t matIndex = std::get<3> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
+
+
+        aiColor3D color(0.f, 0.f, 0.f);
+        float val;
+        std::cout << pFile << "\n";
+
+        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS) {
+            std::cout << color.r << " " << color.g << " " << color.b << "\n";
+            mesh.ambient_texture = Eigen::Vector3f(color.r, color.g, color.b);
+        }
+        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn_SUCCESS) {
+            std::cout << color.r << " " << color.g << " " << color.b << "\n";
+                mesh.diffuse_texture = Eigen::Vector3f(color.r, color.g, color.b);;
+        }
+        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_COLOR_SPECULAR, color) == aiReturn_SUCCESS) {
+            std::cout << color.r << " " << color.g << " " << color.b << "\n";
+                mesh.specular_texture = Eigen::Vector3f(color.r, color.g, color.b);;
+        }
+        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_SHININESS, val) == aiReturn_SUCCESS) {
+            std::cout << val << "\n";
+            mesh.shininess = val;
+        }
 
         for(uint32_t i = 0; i < scene_->mMeshes[k]->mNumVertices;i++)
         {

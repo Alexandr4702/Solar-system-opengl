@@ -53,19 +53,24 @@ class Mesh : public QOpenGLFunctions
 
      Mesh(Mesh&& oth): QOpenGLFunctions(oth.ctx)
      {
-          vertices = move(oth.vertices);
-          indices  = move(oth.indices);
+          vertices    = std::move(oth.vertices);
+          indices     = std::move(oth.indices);
           raw_texture = std::move(oth.raw_texture);
 
-          arrayBuf = move(oth.arrayBuf);
-          indexBuf = move(oth.indexBuf);
-          texture = move(oth.texture);
+          arrayBuf = std::move(oth.arrayBuf);
+          indexBuf = std::move(oth.indexBuf);
+          texture =  std::move(oth.texture);
+
+          ambient_texture  = std::move(oth.ambient_texture );
+          diffuse_texture  = std::move(oth.diffuse_texture );
+          specular_texture = std::move(oth.specular_texture);
+          shininess = oth.shininess;
 
           ctx = oth.ctx;
           oth.ctx = nullptr;
      }
 
-     Mesh& operator=(Mesh&& other)
+     Mesh& operator=(Mesh&& oth)
      {
           if(arrayBuf.get() != nullptr)
           {
@@ -80,16 +85,21 @@ class Mesh : public QOpenGLFunctions
                texture->destroy();
           }
 
-          vertices = move(other.vertices);
-          indices  = move(other.indices);
-          raw_texture = std::move(other.raw_texture);
+          vertices    = std::move(oth.vertices);
+          indices     = std::move(oth.indices);
+          raw_texture = std::move(oth.raw_texture);
 
-          arrayBuf = move(other.arrayBuf);
-          indexBuf = move(other.indexBuf);
-          texture = move(other.texture);
+          arrayBuf = std::move(oth.arrayBuf);
+          indexBuf = std::move(oth.indexBuf);
+          texture =  std::move(oth.texture);
 
-          ctx = other.ctx;
-          other.ctx = nullptr;
+          ambient_texture  = std::move(oth.ambient_texture );
+          diffuse_texture  = std::move(oth.diffuse_texture );
+          specular_texture = std::move(oth.specular_texture);
+          shininess = oth.shininess;
+
+          ctx = oth.ctx;
+          oth.ctx = nullptr;
 
           return *this;
      }
@@ -184,10 +194,10 @@ class Mesh : public QOpenGLFunctions
 
      std::shared_ptr<QOpenGLTexture> texture = nullptr;
 
-     Eigen::Vector3f ambient_texture;
-     Eigen::Vector3f diffuse_texture;
-     Eigen::Vector3f specular_texture;
-     float shininess;
+     Eigen::Vector3f ambient_texture = Eigen::Vector3f(0.1, 0.1, 0.1);
+     Eigen::Vector3f diffuse_texture = Eigen::Vector3f(0.45, 0.45, 0.45);
+     Eigen::Vector3f specular_texture = Eigen::Vector3f(0.45, 0.45, 0.45);
+     float shininess = 8;
 
      private:
      QOpenGLContext *ctx;

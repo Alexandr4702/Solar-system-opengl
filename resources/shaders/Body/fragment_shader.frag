@@ -134,10 +134,10 @@ void main()
     vec3 lightColor = {1, 1, 1};
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
-    texture_properties.ambient = temp.xyz * 0.1;
-    texture_properties.diffuse = temp.xyz * 0.45 * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
-    texture_properties.specular = temp.xyz * 0.45 * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
-    texture_properties.shininess = 8;
+    texture_properties.ambient = temp.xyz * ambient_texture;
+    texture_properties.diffuse = temp.xyz * diffuse_texture * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
+    texture_properties.specular = temp.xyz * specular_texture * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
+    texture_properties.shininess = shininess;
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.positionWorld.xyz, lightColor, camPosition, texture_properties);
     // fragColor = vec4(to_fs.posProjected.z, to_fs.posProjected.z, to_fs.posProjected.z, 1);
