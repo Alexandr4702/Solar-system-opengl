@@ -111,6 +111,9 @@ class Mesh : public QOpenGLFunctions
           vertices = oth.vertices;
           indices  = oth.indices;
           raw_texture = oth.raw_texture;
+          ambient_texture  = oth.ambient_texture ;
+          diffuse_texture  = oth.diffuse_texture ;
+          specular_texture = oth.specular_texture;
 
           arrayBuf->create();
           indexBuf->create();
@@ -147,6 +150,10 @@ class Mesh : public QOpenGLFunctions
           vertices = oth.vertices;
           indices  = oth.indices;
           raw_texture = oth.raw_texture;
+
+          ambient_texture  = oth.ambient_texture ;
+          diffuse_texture  = oth.diffuse_texture ;
+          specular_texture = oth.specular_texture;
 
           arrayBuf->create();
           indexBuf->create();

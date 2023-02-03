@@ -7,6 +7,14 @@
     {
         "name": "Sun",
         "jsonPath": "../resources/settings/Sun.json"
+    },
+    {
+        "name": "Moon",
+        "jsonPath": "../resources/settings/Moon.json"
+    },
+    {
+        "name": "Cubesat6u",
+        "jsonPath": "../resources/settings/Sattelite.json"
     }
     ]
 

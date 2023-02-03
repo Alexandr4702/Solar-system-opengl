@@ -1,1 +1,14 @@
- 
+{
+    "position": [1.5 , 0, -5],
+    "velocity": [0, 0, 0],
+    "quaternion": [1.0, 0, 0, 0],
+    "angularVelocity": [0, 0, 0],
+    "mass": 1,
+    "shaderName": "SomeShader",
+    "scale": [0.001, 0.001, 0.001],
+    "type": "Body",
+    "castsShadows": 1,
+    "modelPath": "../resources/models/CubSat6U.obj",
+    "tensorOfInertion": [[1, 0, 0], [0, 1, 0], [0 ,0, 1]]
+}
+
