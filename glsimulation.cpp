@@ -66,6 +66,7 @@ void GlSimulation::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
+    _world->StartSimulations();
     _paintThreadHandle = std::thread(&GlSimulation::paintThreadfoo, this);
 }
 
@@ -371,7 +372,6 @@ void GlSimulation::ReadBodiesFromJson(std::string jsonName) {
         _world->_bodies.emplace_back(std::move(newElement));
     }
 }
-
 
 void GlSimulation::resizeGL(int width, int height)
 {

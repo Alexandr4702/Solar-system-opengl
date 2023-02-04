@@ -33,6 +33,7 @@ Body::Body(QOpenGLContext* context, std::string filename, std::string objectName
     auto castsShadowsIt = SettingsTree.find("castsShadows");
     auto modelPathIt = SettingsTree.find("modelPath");
 
+    try {
     if (positionIt == SettingsTree.not_found()
         || velocityIt == SettingsTree.not_found()
         || quaternionIt == SettingsTree.not_found()
@@ -41,21 +42,30 @@ Body::Body(QOpenGLContext* context, std::string filename, std::string objectName
         || scaleIt == SettingsTree.not_found()
         || castsShadowsIt == SettingsTree.not_found()
         || modelPathIt == SettingsTree.not_found()
-        ) throw;
+        ) throw 1;
+    } catch (int) {
+        std::cout << "what pos " << (positionIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what vel " << (velocityIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what quat " << (quaternionIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what angularVel " << (angularVelocityIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what mass " << (massIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what scale " << (scaleIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what castsShadows " << (castsShadowsIt == SettingsTree.not_found()) << "\n";
+        std::cout << "what modelPath " << (modelPathIt == SettingsTree.not_found()) << "\n";
+    }
 
+    m_KinematicParametrs.postition[0] = std::next(positionIt->second.begin(), 0)->second.get_value<double>();
+    m_KinematicParametrs.postition[1] = std::next(positionIt->second.begin(), 1)->second.get_value<double>();
+    m_KinematicParametrs.postition[2] = std::next(positionIt->second.begin(), 2)->second.get_value<double>();
 
-    postition[0] = std::next(positionIt->second.begin(), 0)->second.get_value<double>();
-    postition[1] = std::next(positionIt->second.begin(), 1)->second.get_value<double>();
-    postition[2] = std::next(positionIt->second.begin(), 2)->second.get_value<double>();
+    m_KinematicParametrs.velocity[0] = std::next(velocityIt->second.begin(), 0)->second.get_value<double>();
+    m_KinematicParametrs.velocity[1] = std::next(velocityIt->second.begin(), 1)->second.get_value<double>();
+    m_KinematicParametrs.velocity[2] = std::next(velocityIt->second.begin(), 2)->second.get_value<double>();
 
-    velocity[0] = std::next(velocityIt->second.begin(), 0)->second.get_value<double>();
-    velocity[1] = std::next(velocityIt->second.begin(), 1)->second.get_value<double>();
-    velocity[2] = std::next(velocityIt->second.begin(), 2)->second.get_value<double>();
-
-    orientation.w() = std::next(quaternionIt->second.begin(), 0)->second.get_value<double>();
-    orientation.x() = std::next(quaternionIt->second.begin(), 1)->second.get_value<double>();
-    orientation.y() = std::next(quaternionIt->second.begin(), 2)->second.get_value<double>();
-    orientation.z() = std::next(quaternionIt->second.begin(), 3)->second.get_value<double>();
+    m_KinematicParametrs.orientation.w() = std::next(quaternionIt->second.begin(), 0)->second.get_value<double>();
+    m_KinematicParametrs.orientation.x() = std::next(quaternionIt->second.begin(), 1)->second.get_value<double>();
+    m_KinematicParametrs.orientation.y() = std::next(quaternionIt->second.begin(), 2)->second.get_value<double>();
+    m_KinematicParametrs.orientation.z() = std::next(quaternionIt->second.begin(), 3)->second.get_value<double>();
 
     scale[0] = std::next(scaleIt->second.begin(), 0)->second.get_value<double>();
     scale[1] = std::next(scaleIt->second.begin(), 1)->second.get_value<double>();
@@ -74,12 +84,7 @@ Body::Body(Body&& body)
     mass = body.mass;
     m_J = move(body.m_J);
     scale = move(body.scale);
-    postition = move(body.postition);
-    velocity = move(body.velocity);
-    acceleration = move(body.acceleration);
-    orientation = move(body.orientation);
-    angularVelocity = move(body.angularVelocity);
-    angularAcceleration = move(body.angularAcceleration);
+    m_KinematicParametrs = move(body.m_KinematicParametrs);
     meshes = move(body.meshes);
     m_castsShadows = body.m_castsShadows;
     name = move(body.name);
@@ -94,12 +99,7 @@ Body& Body::operator=(Body&& body)
     mass = body.mass;
     m_J = move(body.m_J);
     scale = move(body.scale);
-    postition = move(body.postition);
-    velocity = move(body.velocity);
-    acceleration = move(body.acceleration);
-    orientation = move(body.orientation);
-    angularVelocity = move(body.angularVelocity);
-    angularAcceleration = move(body.angularAcceleration);
+    m_KinematicParametrs = move(body.m_KinematicParametrs);
     meshes = move(body.meshes);
     m_castsShadows = body.m_castsShadows;
     name = move(body.name);
@@ -114,12 +114,7 @@ Body::Body(const Body& body):meshes(body.meshes)
     mass = body.mass;
     m_J = body.m_J;
     scale = (body.scale);
-    postition = (body.postition);
-    velocity = (body.velocity);
-    acceleration = (body.acceleration);
-    orientation = (body.orientation);
-    angularVelocity = (body.angularVelocity);
-    angularAcceleration = (body.angularAcceleration);
+    m_KinematicParametrs = body.m_KinematicParametrs;
     m_castsShadows = body.m_castsShadows;
     name = body.name;
 
@@ -131,12 +126,7 @@ Body& Body::operator=(const Body & body)
     mass = body.mass;
     m_J = body.m_J;
     scale = (body.scale);
-    postition = (body.postition);
-    velocity = (body.velocity);
-    acceleration = (body.acceleration);
-    orientation = (body.orientation);
-    angularVelocity = (body.angularVelocity);
-    angularAcceleration = (body.angularAcceleration);
+    m_KinematicParametrs = body.m_KinematicParametrs;
     meshes = body.meshes;
     m_castsShadows = body.m_castsShadows;
     name = body.name;
@@ -171,31 +161,31 @@ void Body::update()
 void Body::setBodyPosition(Eigen::Vector3d& pos)
 {
     std::scoped_lock guard(mtx);
-    postition = pos;
+    m_KinematicParametrs.postition = pos;
 }
 
 void Body::setBodyPosition(Eigen::Vector3d&& pos)
 {
     std::scoped_lock guard(mtx);
-    postition = pos;
+    m_KinematicParametrs.postition = pos;
 }
 
 void Body::translateBody(Eigen::Vector3d& translation)
 {
     std::scoped_lock guard(mtx);
-    postition += translation;
+    m_KinematicParametrs.postition += translation;
 }
 
 void Body::setBodyRotation(Eigen::Quaterniond& q)
 {
     std::scoped_lock guard(mtx);
-    orientation = q;
+    m_KinematicParametrs.orientation = q;
 }
 
 void Body::rotateBody(Eigen::Quaterniond& q)
 {
     std::scoped_lock guard(mtx);
-    orientation = q * orientation;
+    m_KinematicParametrs.orientation = q * m_KinematicParametrs.orientation;
 }
 
 void Body::setBodyScale(Eigen::Vector3d& scale)
@@ -210,28 +200,43 @@ void Body::setBodyScale(Eigen::Vector3d &&scale)
     this->scale = scale;
 }
 
-Eigen::Vector3d Body::getBodyPosition() const
-{
+const Eigen::Vector3d& Body::getBodyPosition() const {
     std::scoped_lock guard(mtx);
-    Eigen::Vector3d ret(postition);
-    return ret;
+    return m_KinematicParametrs.postition;
 }
 
 Eigen::Vector3d Body::getBodyTranslationMetr() const
 {
     std::scoped_lock guard(mtx);
-    Eigen::Vector3d ret(postition);
+    Eigen::Vector3d ret(m_KinematicParametrs.postition);
     return ret * positionToMetr;
 }
 
+const Body::BodyKinematicParametrs& Body::getBodyKinematicParametrs()
+{
+    std::scoped_lock guard(mtx);
+    return m_KinematicParametrs;
+}
+
+void Body::setBodyKinematicParametrs(const BodyKinematicParametrs& param)
+{
+    std::scoped_lock guard(mtx);
+    m_KinematicParametrs = param;
+}
+
+void Body::setBodyKinematicParametrs(BodyKinematicParametrs&& param)
+{
+    std::scoped_lock guard(mtx);
+    m_KinematicParametrs = std::move(param);
+}
 
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
     std::scoped_lock guard(mtx);
     Eigen::Affine3d bodyMatrix;
     bodyMatrix.setIdentity();
-    bodyMatrix.translate(postition);
-    bodyMatrix.rotate(orientation);
+    bodyMatrix.translate(m_KinematicParametrs.postition);
+    bodyMatrix.rotate(m_KinematicParametrs.orientation);
     bodyMatrix.scale(scale);
 
     return bodyMatrix.matrix().cast <float>();
@@ -419,23 +424,6 @@ bool Body::ImportTestModel()
         20, 20, 21, 22, 23
     };
 
-    // for (auto&& vertex: cubeVertices)
-    // {
-    //     VertexData vertex_ = {vertex.position, vertex.texCoord, Eigen::Vector3f::Zero()};
-
-    //     vertices.push_back(vertex_);
-    // }
-
-    // for (auto&& index: cubeIndices)
-    // {
-    //     indices.push_back(index);
-    // }
-
-    // arrayBuf->bind();
-    // arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
-
-    // indexBuf->bind();
-    // indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
     return true;
 }
 

@@ -15,6 +15,7 @@
 #include <mutex>
 #include <cstddef>
 #include <filesystem>
+#include <utility>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -222,6 +223,16 @@ public:
           NORMAL_RENDER,
      };
 
+     struct BodyKinematicParametrs {
+          Eigen::Vector3d postition = {0, 0, 0};
+          Eigen::Vector3d velocity = {0, 0, 0};
+          Eigen::Vector3d acceleration = {0, 0, 0};
+
+          Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
+          Eigen::Vector3d angularVelocity = {0, 0, 0};
+          Eigen::Vector3d angularAcceleration = {0, 0, 0};
+     };
+
      Body(QOpenGLContext*);
      Body(QOpenGLContext*, std::string filename, std::string objectName);
      Body(Body&&);
@@ -236,8 +247,13 @@ public:
      void setBodyPosition(Eigen::Vector3d&&);
      void translateBody(Eigen::Vector3d&);
 
-     Eigen::Vector3d getBodyPosition() const;
+     const Eigen::Vector3d& getBodyPosition() const;
      Eigen::Vector3d getBodyTranslationMetr() const;
+
+     const BodyKinematicParametrs& getBodyKinematicParametrs();
+
+     void setBodyKinematicParametrs(const BodyKinematicParametrs&);
+     void setBodyKinematicParametrs(BodyKinematicParametrs&& );
 
      void setBodyRotation(Eigen::Quaterniond& q);
      void rotateBody(Eigen::Quaterniond& q);
@@ -264,15 +280,10 @@ private:
      Eigen::Vector3d scale = {1, 1, 1};
 
      //lihgt seconds 299792458
-     Eigen::Vector3d postition = {0, 0, 0};
      float positionToMetr = 1;
-     //lihgt seconds/s 299792458
-     Eigen::Vector3d velocity = {0, 0, 0};
-     Eigen::Vector3d acceleration = {0, 0, 0};
 
-     Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
-     Eigen::Vector3d angularVelocity = {0, 0, 0};
-     Eigen::Vector3d angularAcceleration = {0, 0, 0};
+     BodyKinematicParametrs m_KinematicParametrs;
+
      mutable std::mutex mtx;
      bool m_castsShadows = true;
 
