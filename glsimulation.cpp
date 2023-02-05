@@ -46,20 +46,13 @@ void GlSimulation::initializeGL()
     if(!_shadowMapTechPtr->Init(size().width(), size().height()))
         std::cerr << "blyatstcvo razvrat narkotiki \n";
 
+    readSettings("../resources/settings/Settings.json");
+
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;
     float BodyScaleFactor = 1.0 / 299792458.0 * 1e7;
 
-    ReadBodiesFromJson("../resources/settings/BodiesList.json");
-
-    auto EarthIt = find_if(_world->_bodies.begin(), _world->_bodies.end(), [](auto& one) {
-        return one.getName() == "Earth";
-    });
-
-    if(EarthIt != _world->_bodies.end()) {
-        Eigen::Vector3d pos = EarthIt->getBodyPosition();
-        _cam.setTranslationCam(pos);
-    }
+    readBodiesFromJson("../resources/settings/BodiesList.json");
 
     glClearDepth(1.f);
     glClearColor(0.0f, 0.0f, 0.0f, 0.f);
@@ -340,7 +333,7 @@ bool GlSimulation::createShaderProgramFromFiles(QOpenGLShaderProgram& shaderProg
     return true;
 }
 
-void GlSimulation::ReadBodiesFromJson(std::string jsonName) {
+void GlSimulation::readBodiesFromJson(std::string jsonName) {
     pt ::ptree BodyList;
 
     try {
@@ -371,6 +364,33 @@ void GlSimulation::ReadBodiesFromJson(std::string jsonName) {
         Body newElement(context(), jsonPathIt->second.data(), nameIt->second.data());
         _world->_bodies.emplace_back(std::move(newElement));
     }
+}
+
+void GlSimulation::readSettings(std::string jsonName)
+{
+    pt ::ptree settingsTree;
+
+    try {
+        read_json(jsonName, settingsTree);
+    }
+    catch (pt ::json_parser_error &e) {
+        std ::cout << "Failed to parse the json string.\n" << e.what();
+        throw;
+    }
+    catch (...) {
+        std ::cout << "Failed !!!\n";
+        throw;
+    }
+    auto CamPosIt = settingsTree.find("CamPos");
+
+    if(CamPosIt != settingsTree.not_found()) {
+        Eigen::Vector3d camPos;
+        camPos.x() = std::next(CamPosIt->second.begin(), 0)->second.get_value<double>();
+        camPos.y() = std::next(CamPosIt->second.begin(), 1)->second.get_value<double>();
+        camPos.z() = std::next(CamPosIt->second.begin(), 2)->second.get_value<double>();
+        _cam.setTranslationCam(camPos);
+    }
+
 }
 
 void GlSimulation::resizeGL(int width, int height)

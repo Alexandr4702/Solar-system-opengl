@@ -67,6 +67,10 @@ Body::Body(QOpenGLContext* context, std::string filename, std::string objectName
     m_KinematicParametrs.orientation.y() = std::next(quaternionIt->second.begin(), 2)->second.get_value<double>();
     m_KinematicParametrs.orientation.z() = std::next(quaternionIt->second.begin(), 3)->second.get_value<double>();
 
+    m_KinematicParametrs.angularVelocity[0] = std::next(angularVelocityIt->second.begin(), 0)->second.get_value<double>();
+    m_KinematicParametrs.angularVelocity[1] = std::next(angularVelocityIt->second.begin(), 1)->second.get_value<double>();
+    m_KinematicParametrs.angularVelocity[2] = std::next(angularVelocityIt->second.begin(), 2)->second.get_value<double>();
+
     scale[0] = std::next(scaleIt->second.begin(), 0)->second.get_value<double>();
     scale[1] = std::next(scaleIt->second.begin(), 1)->second.get_value<double>();
     scale[2] = std::next(scaleIt->second.begin(), 2)->second.get_value<double>();

@@ -267,6 +267,8 @@ public:
           return name;
      }
 
+     const double& getMass () const {return mass;}
+
 private:
      bool ImportModel(std::string pFile);
      bool ImportTestModel();

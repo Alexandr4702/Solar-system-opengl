@@ -45,7 +45,8 @@ protected:
 private:
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string geometryShader, std::string fragmentShader);
-    void ReadBodiesFromJson(std::string jsonName);
+    void readBodiesFromJson(std::string jsonName);
+    void readSettings(std::string jsonName);
 
     QOpenGLShaderProgram _shaderProgrammBody;
 
