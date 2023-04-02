@@ -227,10 +227,12 @@ public:
           Eigen::Vector3d postition = {0, 0, 0};
           Eigen::Vector3d velocity = {0, 0, 0};
           Eigen::Vector3d acceleration = {0, 0, 0};
+          Eigen::Vector3d force = {0, 0, 0};
 
           Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
           Eigen::Vector3d angularVelocity = {0, 0, 0};
           Eigen::Vector3d angularAcceleration = {0, 0, 0};
+          Eigen::Vector3d torque = {0, 0, 0};
      };
 
      Body(QOpenGLContext*);

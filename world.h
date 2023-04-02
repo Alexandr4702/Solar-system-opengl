@@ -28,6 +28,7 @@ public:
     std::thread _calculatingThread;
     std::atomic<bool> _isPaintThreadRun = true;
     double dt = 1e-3;
+    const double G = 1e1;
 };
 
 template <typename T, typename U>
