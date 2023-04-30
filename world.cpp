@@ -50,7 +50,7 @@ void World::calculatingThread()
 void World::calcForcesAccelrations()
 {
     using namespace Eigen;
-    std::cout << "New iter \n";
+    // std::cout << "New iter \n";
     for(uint32_t i = 0; i < _bodies.size(); i++) {
 
         Body::BodyKinematicParametrs param_i(_bodies[i].getBodyKinematicParametrs());
