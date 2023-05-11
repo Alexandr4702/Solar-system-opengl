@@ -4,6 +4,8 @@ layout (location = 1) in vec2 texture_coordinate;
 layout (location = 2) in vec3 normal;
 
 uniform mat4 world_matrix;
+uniform float far_plane;
+uniform float near_plane;
 
 void main()
 {

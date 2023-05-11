@@ -11,6 +11,9 @@ uniform mat4 projective_matrix;
 uniform mat4 light_matrix;
 // uniform mat4 vp_matrix;
 
+uniform float near_plane;
+uniform float far_plane;
+
 out struct data_to_pass
 {
     vec2 v_texcoord;

@@ -19,11 +19,17 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
-
 class Camera
 {
 public:
+    struct CamParametrs {
+        float near_plane   = 1.0f;
+        float far_plane    = 12.0f;
+        float aspect_ratio = 1;
+        float fov          = 60.f;
+    };
+
+    Camera();
     void setAspectRatio(float ratio);
     void setProjetionMatrix(Eigen::Matrix4d mat);
     void setProjetionMatrix(float fovY, float aspectRatio, float zNear, float zFar);
@@ -45,15 +51,25 @@ public:
     Eigen::Matrix4f getCameraProjectiveMatrix() const;
     void printCameraParam(std::ostream &out) const;
     void StartRotation(Eigen::Vector2d &mouseCoord);
+    const CamParametrs& getCamParametrs()const {
+        return m_cam_params;
+    }
+
+    static Eigen::Matrix4d projective_matrix(const CamParametrs& param);
+    static Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
 
 private:
+
+    CamParametrs m_cam_params;
+
     Eigen::Vector3d translation{0, 0, 0};
     Eigen::Quaterniond rotation = Eigen::Quaterniond(1, 0, 0, 0);
     Eigen::Vector3d scale{1.0f, 1.0f, 1.0f};
-    Eigen::Matrix4d projectiveMatrix = projective_matrix(60.f, 1.f, 1.f, 100.0f);
+    Eigen::Matrix4d projectiveMatrix = projective_matrix(m_cam_params);
 
     Eigen::Quaterniond q0;
     Eigen::Vector2d mouseCoord0;
+
 
     mutable std::mutex mtx;
 };

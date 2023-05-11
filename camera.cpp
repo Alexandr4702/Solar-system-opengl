@@ -1,5 +1,9 @@
 #include "camera.h"
 
+Camera::Camera() {
+
+}
+
 void Camera::setProjetionMatrix(Eigen::Matrix4d mat)
 {
     mtx.lock();
@@ -121,7 +125,7 @@ void Camera::printCameraParam(std::ostream& out) const
     out << rotation << "\r\n";
 }
 
-Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar)
+Eigen::Matrix4d Camera::projective_matrix(float fovY, float aspectRatio, float zNear, float zFar)
 {
     float yScale = 1 / tan(fovY * M_PI / 360.0f);
     float xScale = yScale / aspectRatio;
@@ -130,10 +134,27 @@ Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, fl
     // float xScale = 1;
 
     Eigen::Matrix4d pmat;
-    pmat << xScale, 0, 0, 0,
-            0, yScale, 0, 0,
-            0, 0, -(zFar+zNear)/(zFar-zNear), -2*zNear*zFar/(zFar-zNear),
-            0, 0, -1, 0;
+    pmat << xScale,      0,                           0,                          0,
+            0     , yScale,                           0,                          0,
+            0     ,      0,  -(zFar+zNear)/(zFar-zNear), -2*zNear*zFar/(zFar-zNear),
+            0     ,      0,                          -1,                          0;
+    return pmat;
+}
+
+Eigen::Matrix4d Camera::projective_matrix(const Camera::CamParametrs& param)
+{
+    float yScale = 1 / tan(param.fov * M_PI / 360.0f);
+    float xScale = yScale / param.aspect_ratio;
+    // param.near_plane
+
+    // float yScale = 1;
+    // float xScale = 1;
+
+    Eigen::Matrix4d pmat;
+    pmat << xScale,      0,                           0,                          0,
+            0     , yScale,                           0,                          0,
+            0     ,      0,  -(param.far_plane+param.near_plane)/(param.far_plane-param.near_plane), -2*param.near_plane*param.far_plane/(param.far_plane-param.near_plane),
+            0     ,      0,                          -1,                          0;
     return pmat;
 }
 
@@ -163,7 +184,9 @@ void Camera::rotateCam(Eigen::Vector2d& mouseCoord)
 void Camera::setAspectRatio(float ratio)
 {
     std::scoped_lock guard(mtx);
-    projectiveMatrix = projective_matrix(60.f, ratio, 1e-3f, 4e4f);
+    m_cam_params.aspect_ratio = ratio;
+    // projectiveMatrix = projective_matrix(60.f, ratio, 1e-3f, 4e4f);
+    projectiveMatrix = projective_matrix(m_cam_params);
     // projectiveMatrix = Eigen::Matrix4f(glm::value_ptr(glm::perspective(glm::radians(60.0f), ratio, 1e-3f, 4e4f))).cast <double> ();
 
     // std::cout << projectiveMatrix << "\r\n";

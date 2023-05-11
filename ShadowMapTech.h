@@ -145,6 +145,7 @@ class PointShadowMapTech: public QOpenGLFunctions
         _shadowMapFBO->Init(_width, _height);
 
         _far_planeLocation = _shaderProgramTechMap.uniformLocation("far_plane");
+        _near_planeLocation = _shaderProgramTechMap.uniformLocation("near_plane");
         _lightPosLocation = _shaderProgramTechMap.uniformLocation("lightPos");
 
         for(int i = 0; i < 6; i++) {
@@ -161,9 +162,18 @@ class PointShadowMapTech: public QOpenGLFunctions
 
         return false;
     }
+
     void setMatrixes(Eigen::Matrix4f& lightMatrix, Eigen::Matrix4f& prjectiveMatrix) {
 
     }
+
+    void set_farNearLocation (float nearPlane, float farPlane) {
+        if(_near_planeLocation != 0 && _far_planeLocation != 0) {
+            glUniform1f(_near_planeLocation, nearPlane);
+            glUniform1f(_far_planeLocation, farPlane);
+        }
+    }
+
     void prepeBeforeGeneratingShadowMap ()
     {
         _shadowMapFBO->BindForWriting();
@@ -214,6 +224,7 @@ class PointShadowMapTech: public QOpenGLFunctions
     float _nearPlane = 1.0;
 
     int _far_planeLocation = 0;
+    int _near_planeLocation = 0;
     int _lightPosLocation = 0;
     int _shadowMatrixesLocations[6] = {0};
 

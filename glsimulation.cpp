@@ -103,7 +103,12 @@ void GlSimulation::paintGL()
 
     int far_planeLocaction_BodyShader = _shaderProgrammBody.uniformLocation("far_plane");
     if(far_planeLocaction_BodyShader >= 0) {
-        glUniform1f(far_planeLocaction_BodyShader, _shadowMapTechPtr->_farPlane);
+        glUniform1f(far_planeLocaction_BodyShader, _cam.getCamParametrs().far_plane);
+    }
+
+    int near_planeLocaction_BodyShader = _shaderProgrammBody.uniformLocation("near_plane");
+    if(near_planeLocaction_BodyShader >= 0) {
+        glUniform1f(near_planeLocaction_BodyShader, _cam.getCamParametrs().near_plane);
     }
 
     int lightMatrixLocaction_BodyShader = _shaderProgrammBody.uniformLocation("light_matrix");
@@ -398,5 +403,8 @@ void GlSimulation::resizeGL(int width, int height)
     _cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
     _shadowMapTechPtr->resize(width, height);
     glViewport(0, 0, GLint(width), GLint(height));
+    std::cout << "aspeckt reation :" << static_cast<float>(width) / static_cast<float>(height) << "\n";
+    std::cout << "projective matrix\n" << _cam.getProjetionMatrix() << "\n";
+
     // std::cerr << "Resize. " << size().width() << " " << size().height() << "\n";
 }

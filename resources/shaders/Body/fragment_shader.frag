@@ -21,6 +21,8 @@ in struct data_to_pass
 uniform sampler2D textures;
 out vec4 fragColor;
 uniform vec3 camPosition;
+
+uniform float near_plane;
 uniform float far_plane;
 
 uniform vec3 ambient_texture;
@@ -131,7 +133,7 @@ vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 v
 
 void main()
 {
-    vec3 lightColor = {1, 1, 1};
+    vec3 lightColor = {near_plane, 1, 1};
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * ambient_texture;
