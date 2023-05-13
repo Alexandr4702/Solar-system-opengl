@@ -31,6 +31,9 @@ void main()
     vec4 posCam   = view_matrix * worldPos;
     gl_Position = projective_matrix * posCam;
 
+    float logDepth = log(gl_Position.w * far_plane + 1.0) / log(far_plane * near_plane + 1.0);
+    gl_Position.z = (2.0 * logDepth - 1.0) / gl_Position.w;
+
     to_fs.lightSystemCoordinateFragPos = projective_matrix * light_matrix * worldPos;
 
     to_fs.v_texcoord = texture_coordinate;

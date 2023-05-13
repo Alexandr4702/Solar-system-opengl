@@ -185,9 +185,8 @@ void Camera::setAspectRatio(float ratio)
 {
     std::scoped_lock guard(mtx);
     m_cam_params.aspect_ratio = ratio;
-    // projectiveMatrix = projective_matrix(60.f, ratio, 1e-3f, 4e4f);
     projectiveMatrix = projective_matrix(m_cam_params);
+    // projectiveMatrix = projective_matrix(60.f, ratio, 1e-3f, 4e4f);
     // projectiveMatrix = Eigen::Matrix4f(glm::value_ptr(glm::perspective(glm::radians(60.0f), ratio, 1e-3f, 4e4f))).cast <double> ();
-
     // std::cout << projectiveMatrix << "\r\n";
 }
