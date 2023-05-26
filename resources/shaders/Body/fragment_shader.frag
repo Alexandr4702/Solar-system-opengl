@@ -133,7 +133,7 @@ vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 v
 
 void main()
 {
-    vec3 lightColor = {near_plane, 1, 1};
+    vec3 lightColor = {1, 1, 1};
     vec4 temp = texture(textures, to_fs.v_texcoord);
     texture_Pr texture_properties;
     texture_properties.ambient = temp.xyz * ambient_texture;
