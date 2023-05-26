@@ -24,7 +24,7 @@ class Camera
 public:
     struct CamParametrs {
         float near_plane   = 1.0f;
-        float far_plane    = 12.0f;
+        float far_plane    = 1000.0f;
         float aspect_ratio = 1;
         float fov          = 60.f;
     };

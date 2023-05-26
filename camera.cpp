@@ -143,18 +143,7 @@ Eigen::Matrix4d Camera::projective_matrix(float fovY, float aspectRatio, float z
 
 Eigen::Matrix4d Camera::projective_matrix(const Camera::CamParametrs& param)
 {
-    float yScale = 1 / tan(param.fov * M_PI / 360.0f);
-    float xScale = yScale / param.aspect_ratio;
-    // param.near_plane
-
-    // float yScale = 1;
-    // float xScale = 1;
-
-    Eigen::Matrix4d pmat;
-    pmat << xScale,      0,                           0,                          0,
-            0     , yScale,                           0,                          0,
-            0     ,      0,  -(param.far_plane+param.near_plane)/(param.far_plane-param.near_plane), -2*param.near_plane*param.far_plane/(param.far_plane-param.near_plane),
-            0     ,      0,                          -1,                          0;
+    Eigen::Matrix4d pmat = projective_matrix(param.fov, param.aspect_ratio, param.near_plane, param.far_plane);
     return pmat;
 }
 
