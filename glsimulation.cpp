@@ -33,6 +33,8 @@ void GlSimulation::initializeGL()
 {
     initializeOpenGLFunctions();
 
+    readSettings("../resources/settings/Settings.json");
+
     _shadowMapTechPtr = std::make_unique<PointShadowMapTech>(context());
 
     createShaderProgramFromFiles(_shaderProgrammBody,
@@ -46,7 +48,7 @@ void GlSimulation::initializeGL()
     if(!_shadowMapTechPtr->Init(size().width(), size().height()))
         std::cerr << "blyatstcvo razvrat narkotiki \n";
 
-    readSettings("../resources/settings/Settings.json");
+    _shadowMapTechPtr->set_FarNear(_cam.getCamParametrs().near_plane, _cam.getCamParametrs().far_plane);
 
     float PlanetScaleFactor = 1.0 / 299792458.0 * 1e0;
     float DisctaneScaleFactor = 1.0 / 299792458.0 * 5e-2;

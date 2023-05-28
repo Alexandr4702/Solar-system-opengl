@@ -130,9 +130,6 @@ class PointShadowMapTech: public QOpenGLFunctions
     }
     bool Init(unsigned int Width, unsigned int Height)
     {
-        // _width = Width;
-        // _height = Height;
-
         _projectiveMatrix = glm::perspective(glm::radians(90.0f), static_cast<float>(_width) / static_cast<float>(_height), _nearPlane,  _farPlane);
 
         _sidesMatrixes[0] = _projectiveMatrix * glm::lookAt(_lightPos, _lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
@@ -167,11 +164,9 @@ class PointShadowMapTech: public QOpenGLFunctions
 
     }
 
-    void set_farNearLocation (float nearPlane, float farPlane) {
-        if(_near_planeLocation != 0 && _far_planeLocation != 0) {
-            glUniform1f(_near_planeLocation, nearPlane);
-            glUniform1f(_far_planeLocation, farPlane);
-        }
+    void set_FarNear (float nearPlane, float farPlane) {
+        _farPlane = farPlane;
+        _nearPlane = nearPlane;
     }
 
     void prepeBeforeGeneratingShadowMap ()
@@ -179,6 +174,9 @@ class PointShadowMapTech: public QOpenGLFunctions
         _shadowMapFBO->BindForWriting();
         glClear(GL_DEPTH_BUFFER_BIT);
         _shaderProgramTechMap.bind();
+
+        if(_near_planeLocation> 0)
+            glUniform1f(_far_planeLocation, _nearPlane);
 
         if(_far_planeLocation > 0)
             glUniform1f(_far_planeLocation, _farPlane);
@@ -191,8 +189,8 @@ class PointShadowMapTech: public QOpenGLFunctions
                 glUniformMatrix4fv(_shadowMatrixesLocations[i], 1, GL_FALSE, glm::value_ptr(_sidesMatrixes[i]));
             }
         }
-
     }
+
     void preapeforReadingShadowMap(GLint textueUnit, int shadowMapLocation) {
         // int shadowMapLocation = _shaderProgrammBody.uniformLocation("shadowMap");
         if(shadowMapLocation >= 0) {
@@ -220,7 +218,7 @@ class PointShadowMapTech: public QOpenGLFunctions
     glm::mat4 _sidesMatrixes[6];
     glm::mat4 _projectiveMatrix;
     glm::vec3 _lightPos = {0, 0, 0};
-    float _farPlane = 25.0;
+    float _farPlane = 1000.0;
     float _nearPlane = 1.0;
 
     int _far_planeLocation = 0;

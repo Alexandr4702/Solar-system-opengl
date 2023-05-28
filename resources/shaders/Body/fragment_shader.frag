@@ -60,7 +60,7 @@ float PointsShadowCalculation(samplerCube shadowMap, vec3 fragPos)
 {
     vec3 fragToLight = fragPos - LightPosition.xyz;
     float closestDepth = texture(shadowMap, fragToLight).x;
-    closestDepth *= 25;
+    closestDepth *= far_plane;
     float currentDepth = length(fragToLight);
 
     float bias = max(0.05 * (1.0 - dot(to_fs.normal, fragToLight)), 0.005);
