@@ -405,8 +405,6 @@ void GlSimulation::resizeGL(int width, int height)
     _cam.setAspectRatio( static_cast<float>(width) / static_cast<float>(height));
     _shadowMapTechPtr->resize(width, height);
     glViewport(0, 0, GLint(width), GLint(height));
-    std::cout << "aspeckt reation :" << static_cast<float>(width) / static_cast<float>(height) << "\n";
-    std::cout << "projective matrix\n" << _cam.getProjetionMatrix() << "\n";
 
     // std::cerr << "Resize. " << size().width() << " " << size().height() << "\n";
 }
