@@ -1,0 +1,14 @@
+resources/models/CubSat6U.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/untitled.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/CubSat3UVR.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Moon/Moon.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Neptune/Neptune.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Sun/Sun.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Cube/Cube.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Earth/Earth.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Mercury/Mercury.obj filter=lfs diff=lfs merge=lfs -text
+resources/models/Earth/world.200408.3x5400x2700.jpg filter=lfs diff=lfs merge=lfs -text
+resources/models/Mercury/2k_mercury.jpg filter=lfs diff=lfs merge=lfs -text
+resources/models/Moon/2k_moon.jpg filter=lfs diff=lfs merge=lfs -text
+resources/models/Neptune/2k_neptune.jpg filter=lfs diff=lfs merge=lfs -text
+resources/models/Sun/2k_sun.jpg filter=lfs diff=lfs merge=lfs -text
