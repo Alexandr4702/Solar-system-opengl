@@ -89,7 +89,7 @@ Body::Body(Body&& body)
     m_J = move(body.m_J);
     scale = move(body.scale);
     m_KinematicParametrs = move(body.m_KinematicParametrs);
-    meshes = move(body.meshes);
+    m_meshes = move(body.m_meshes);
     m_castsShadows = body.m_castsShadows;
     name = move(body.name);
 
@@ -104,7 +104,7 @@ Body& Body::operator=(Body&& body)
     m_J = move(body.m_J);
     scale = move(body.scale);
     m_KinematicParametrs = move(body.m_KinematicParametrs);
-    meshes = move(body.meshes);
+    m_meshes = move(body.m_meshes);
     m_castsShadows = body.m_castsShadows;
     name = move(body.name);
 
@@ -113,7 +113,7 @@ Body& Body::operator=(Body&& body)
     return*this;
 }
 
-Body::Body(const Body& body):meshes(body.meshes)
+Body::Body(const Body& body):m_meshes(body.m_meshes)
 {
     mass = body.mass;
     m_J = body.m_J;
@@ -131,7 +131,7 @@ Body& Body::operator=(const Body & body)
     m_J = body.m_J;
     scale = (body.scale);
     m_KinematicParametrs = body.m_KinematicParametrs;
-    meshes = body.meshes;
+    m_meshes = body.m_meshes;
     m_castsShadows = body.m_castsShadows;
     name = body.name;
 
@@ -146,97 +146,97 @@ Body::~Body()
 
 void Body::draw(QOpenGLShaderProgram& program, RenderType type)
 {
-    if(!m_castsShadows && type == RenderType::SHADOW_RENDER)
+    if(!m_castsShadows && type == RenderType::SHADOW)
         return;
 
     Eigen::Matrix4f m_matrix = getBodyMatrix().transpose();
     QMatrix4x4 m_matrixQt(m_matrix.data());
     program.setUniformValue("world_matrix", m_matrixQt);
 
-    for(auto&& mesh: meshes)
+    for(auto&& mesh: m_meshes)
         mesh.draw(program);
 }
 
 void Body::update()
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
 }
 
 void Body::setBodyPosition(Eigen::Vector3d& pos)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs.postition = pos;
 }
 
 void Body::setBodyPosition(Eigen::Vector3d&& pos)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs.postition = pos;
 }
 
 void Body::translateBody(Eigen::Vector3d& translation)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs.postition += translation;
 }
 
 void Body::setBodyRotation(Eigen::Quaterniond& q)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs.orientation = q;
 }
 
 void Body::rotateBody(Eigen::Quaterniond& q)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs.orientation = q * m_KinematicParametrs.orientation;
 }
 
 void Body::setBodyScale(Eigen::Vector3d& scale)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     this->scale = scale;
 }
 
 void Body::setBodyScale(Eigen::Vector3d &&scale)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     this->scale = scale;
 }
 
 const Eigen::Vector3d& Body::getBodyPosition() const {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     return m_KinematicParametrs.postition;
 }
 
 Eigen::Vector3d Body::getBodyTranslationMetr() const
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     Eigen::Vector3d ret(m_KinematicParametrs.postition);
     return ret * positionToMetr;
 }
 
 const Body::BodyKinematicParametrs& Body::getBodyKinematicParametrs()
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     return m_KinematicParametrs;
 }
 
 void Body::setBodyKinematicParametrs(const BodyKinematicParametrs& param)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs = param;
 }
 
 void Body::setBodyKinematicParametrs(BodyKinematicParametrs&& param)
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     m_KinematicParametrs = std::move(param);
 }
 
 Eigen::Matrix4f Body::getBodyMatrix() const
 {
-    std::scoped_lock guard(mtx);
+    std::scoped_lock guard(m_mtx);
     Eigen::Affine3d bodyMatrix;
     bodyMatrix.setIdentity();
     bodyMatrix.translate(m_KinematicParametrs.postition);
@@ -249,10 +249,9 @@ Eigen::Matrix4f Body::getBodyMatrix() const
 bool Body::ImportModel(std::string pFile)
 {
     Assimp::Importer importer;
-    aiString texture_path;
     std::filesystem::path path_to_file(pFile);
 
-    std::vector< std::tuple<std::shared_ptr<QOpenGLTexture>, unsigned int, QImage, uint32_t>> textures;
+    std::vector<std::shared_ptr<Material>> materials;
 
     const aiScene* scene_ = importer.ReadFile( pFile,
                                 aiProcess_Triangulate            |
@@ -271,34 +270,13 @@ bool Body::ImportModel(std::string pFile)
 
     for(uint32_t i = 0; i < (scene_->mNumMaterials); i++)
     {
-        for(uint32_t j = 0; j < 22; j++)
-        {
-
-            // std::cout << (scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) << " " << j << " " << i << " \n";
-
-            if((scene_->mMaterials[i]->GetTextureCount(static_cast<aiTextureType> (j))) > 0)
-            {
-                unsigned int texture_index;
-
-                scene_->mMaterials[i]->GetTexture(static_cast<aiTextureType> (j), 0, &texture_path, NULL, &texture_index);
-                QImage texture_image;
-                // std::cout << path_to_file.parent_path().string() << "\n";
-                QString path_to_texture = QString(path_to_file.parent_path().string().c_str()) + QString("/") + QString(texture_path.C_Str());
-                texture_image = QImage(path_to_texture);
-
-                if (!texture_image.isNull())
-                {
-                    std::shared_ptr<QOpenGLTexture> texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(texture_image.mirrored()));
-                    textures.push_back({texture, texture_index, texture_image, i});
-                } else{
-                    std::cerr << "Unable to load textures\n";
-                    return false;
-                }
-            }
-        }
+        materials.push_back(std::make_shared<Material>(ctx,
+                                                       scene_->mMaterials[i],
+                                                       path_to_file.parent_path().string())
+                                                       );
     }
 
-    if(textures.size() == 0)
+    if(materials.size() == 0)
     {
         std::cerr << "Unable to load textures\n";
         return false;
@@ -307,37 +285,15 @@ bool Body::ImportModel(std::string pFile)
     for(uint16_t k = 0; k < scene_->mNumMeshes; k++)
     {
         Mesh mesh(ctx);
+        int32_t materialIndex = scene_->mMeshes[k]->mMaterialIndex;
+        mesh.m_mat = materials[materialIndex];
 
-        mesh.texture = std::get<0> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
-        unsigned int texture_index = std::get<1> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
-        mesh.raw_texture = std::get<2> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
-        uint32_t matIndex = std::get<3> (textures[scene_->mMeshes[k]->mMaterialIndex - 1]);
-
-
-        aiColor3D color(0.f, 0.f, 0.f);
-        float val;
-        std::cout << pFile << "\n";
-
-        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS) {
-            std::cout << color.r << " " << color.g << " " << color.b << "\n";
-            mesh.ambient_texture = Eigen::Vector3f(color.r, color.g, color.b);
-        }
-        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn_SUCCESS) {
-            std::cout << color.r << " " << color.g << " " << color.b << "\n";
-                mesh.diffuse_texture = Eigen::Vector3f(color.r, color.g, color.b);;
-        }
-        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_COLOR_SPECULAR, color) == aiReturn_SUCCESS) {
-            std::cout << color.r << " " << color.g << " " << color.b << "\n";
-                mesh.specular_texture = Eigen::Vector3f(color.r, color.g, color.b);;
-        }
-        if (scene_->mMaterials[matIndex]->Get(AI_MATKEY_SHININESS, val) == aiReturn_SUCCESS) {
-            std::cout << val << "\n";
-            mesh.shininess = val;
-        }
+        unsigned int texture_index = 0;
+        // uint32_t matIndex = std::get<3> (materials[scene_->mMeshes[k]->mMaterialIndex - 1]);
 
         for(uint32_t i = 0; i < scene_->mMeshes[k]->mNumVertices;i++)
         {
-            VertexData vertex;
+            Mesh::VertexData vertex;
             vertex.position = Eigen::Vector3f(
             scene_->mMeshes[k]->mVertices[i].x,
             scene_->mMeshes[k]->mVertices[i].y,
@@ -346,7 +302,7 @@ bool Body::ImportModel(std::string pFile)
 
             if(scene_->mMeshes[k]->mTextureCoords[texture_index] != nullptr)
             {
-                vertex.texCoord = Eigen::Vector2f(
+                vertex.colorTextCoord = Eigen::Vector2f(
                     scene_->mMeshes[k]->mTextureCoords[texture_index][i].x,
                     scene_->mMeshes[k]->mTextureCoords[texture_index][i].y
                 );
@@ -357,29 +313,24 @@ bool Body::ImportModel(std::string pFile)
             scene_->mMeshes[k]->mNormals[i].y,
             scene_->mMeshes[k]->mNormals[i].z
             );
-            mesh.vertices.push_back(vertex);
+            mesh.m_vertices.push_back(vertex);
         }
 
         for(uint32_t i = 0; i < scene_->mMeshes[k]->mNumFaces;i++)
         {
             for(uint32_t j = 0; j < scene_->mMeshes[k]->mFaces[i].mNumIndices; j++)
             {
-                mesh.indices.push_back(scene_->mMeshes[k]->mFaces[i].mIndices[j]);
+                mesh.m_indices.push_back(scene_->mMeshes[k]->mFaces[i].mIndices[j]);
             }
         }
 
-        mesh.arrayBuf->bind();
-        mesh.arrayBuf->allocate(mesh.vertices.data(), mesh.vertices.size() * sizeof(mesh.vertices[0]));
+        mesh.m_arrayBuf->bind();
+        mesh.m_arrayBuf->allocate(mesh.m_vertices.data(), mesh.m_vertices.size() * sizeof(mesh.m_vertices[0]));
 
-        mesh.indexBuf->bind();
-        mesh.indexBuf->allocate(mesh.indices.data(), mesh.indices.size() * sizeof(mesh.indices[0]));
+        mesh.m_indexBuf->bind();
+        mesh.m_indexBuf->allocate(mesh.m_indices.data(), mesh.m_indices.size() * sizeof(mesh.m_indices[0]));
 
-        mesh.ambient_texture;
-        mesh.diffuse_texture;
-        mesh.specular_texture;
-        mesh.shininess;
-
-        meshes.push_back(std::move(mesh));
+        m_meshes.push_back(std::move(mesh));
     }
 
     return true;
@@ -389,7 +340,7 @@ bool Body::ImportTestModel()
 {
     Mesh mesh(ctx);
 
-        std::vector <VertexData> cubeVertices = {
+    std::vector <Mesh::VertexData> cubeVertices = {
         { {-1.0f, -1.0f,  1.0f}, {0.0f, 0.0f } },
         { { 1.0f, -1.0f,  1.0f}, {0.33f, 0.0f} },
         { {-1.0f,  1.0f,  1.0f}, {0.0f, 0.5f } },
@@ -433,40 +384,25 @@ bool Body::ImportTestModel()
 
 void Mesh::draw(QOpenGLShaderProgram &program)
 {
-    if(texture.get() != nullptr) {
-        texture->bind(3);
-        program.setUniformValue("textures", 3);
-    }
-
-    arrayBuf->bind();
-    indexBuf->bind();
+    m_arrayBuf->bind();
+    m_indexBuf->bind();
+    m_mat->bindTexture(program);
 
     // int vertexLocation = program.attributeLocation("a_position");
     int vertexLocation = 0;
     program.enableAttributeArray(vertexLocation);
-    program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(vertices[0]));
+    program.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(m_vertices[0]));
 
-    int texture_coordinate_loaction = 1;
-    program.enableAttributeArray(texture_coordinate_loaction);
-    program.setAttributeBuffer(texture_coordinate_loaction, GL_FLOAT, offsetof(VertexData, texCoord), 2, sizeof(vertices[0]));
+    int texture_coordinate_location = 1;
+    program.enableAttributeArray(texture_coordinate_location);
+    program.setAttributeBuffer(texture_coordinate_location, GL_FLOAT, offsetof(VertexData, colorTextCoord), 2, sizeof(m_vertices[0]));
 
     int normal_location = 2;
     program.enableAttributeArray(normal_location);
-    program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 3, sizeof(vertices[0]));
+    program.setAttributeBuffer(normal_location, GL_FLOAT, offsetof(VertexData, normal), 3, sizeof(m_vertices[0]));
 
-    QVector3D ambient_texture_QT (ambient_texture.x(), ambient_texture.y(), ambient_texture.z());
-    program.setUniformValue("ambient_texture", ambient_texture_QT);
 
-    QVector3D diffuse_texture_QT(diffuse_texture.x(), diffuse_texture.y(), diffuse_texture.z());
-    program.setUniformValue("diffuse_texture", diffuse_texture_QT);
+    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
 
-    QVector3D specular_texture_QT(specular_texture.x(), specular_texture.y(), specular_texture.z());
-    program.setUniformValue("specular_texture", specular_texture_QT);
-
-    float shininess = this->shininess;
-    program.setUniformValue("shininess", shininess);
-
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
-    if(texture.get() != nullptr)
-        texture->release(3);
+    m_mat->releaseTexture();
 }

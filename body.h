@@ -31,184 +31,249 @@
 
 #include "camera.h"
 
-struct VertexData
-{
-     Eigen::Vector3f position;
-     Eigen::Vector2f texCoord;
-     Eigen::Vector3f normal;
+class Material : public QOpenGLFunctions {
+     public:
+     Material(QOpenGLContext* ctx_, aiMaterial* mat, const std::string pathToTextureFolder):
+     QOpenGLFunctions(ctx_)
+     ,m_ctx(ctx_)
+     ,m_name(mat->GetName().data)
+     {
+          aiColor3D color(0.f, 0.f, 0.f);
+          float val;
+          aiString texture_path;
+          unsigned int texture_index;
+
+          if (mat->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS) {
+               m_ambientCoeff = Eigen::Vector3f(color.r, color.g, color.b);
+          }
+          if (mat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn_SUCCESS) {
+               m_diffuseCoeff = Eigen::Vector3f(color.r, color.g, color.b);;
+          }
+          if (mat->Get(AI_MATKEY_COLOR_SPECULAR, color) == aiReturn_SUCCESS) {
+               m_specularCoeff = Eigen::Vector3f(color.r, color.g, color.b);;
+          }
+          if (mat->Get(AI_MATKEY_SHININESS, val) == aiReturn_SUCCESS) {
+               m_shininess = val;
+          }
+
+          if(mat->GetTexture(aiTextureType_DIFFUSE, 0, &texture_path, NULL, &texture_index) == aiReturn_SUCCESS) {
+               std::string path_to_texture(texture_path.data);
+               path_to_texture = pathToTextureFolder + "/" + path_to_texture;
+               m_raw_ColorTexture = QImage(path_to_texture.c_str());
+               if(m_raw_ColorTexture.isNull()) {
+                    std::cout << "Cannot open texture\n";
+               } else {
+                    m_colorTexture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(m_raw_ColorTexture.mirrored()));
+               }
+          }
+
+          if(mat->GetTexture(aiTextureType_HEIGHT, 0, &texture_path, NULL, &texture_index) == aiReturn_SUCCESS) {
+               std::string path_to_texture(texture_path.data);
+               path_to_texture = pathToTextureFolder + "/" + path_to_texture;
+               m_raw_BumpTexture = QImage(path_to_texture.c_str());
+
+               m_colorTexture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(m_raw_ColorTexture.mirrored()));
+          }
+     }
+
+     Material(const Material& oth): QOpenGLFunctions(oth.m_ctx), m_ctx(oth.m_ctx)
+     {
+          m_raw_ColorTexture = oth.m_raw_ColorTexture;
+          m_colorTexture = oth.m_colorTexture;
+
+          m_ambientCoeff  = oth.m_ambientCoeff ;
+          m_diffuseCoeff  = oth.m_diffuseCoeff ;
+          m_specularCoeff = oth.m_specularCoeff;
+     }
+
+     Material(Material&& oth): QOpenGLFunctions(oth.m_ctx), m_ctx(oth.m_ctx)
+     {
+          m_raw_ColorTexture = std::move(oth.m_raw_ColorTexture);
+          m_colorTexture =  std::move(oth.m_colorTexture);
+
+          m_ambientCoeff  = std::move(oth.m_ambientCoeff );
+          m_diffuseCoeff  = std::move(oth.m_diffuseCoeff );
+          m_specularCoeff = std::move(oth.m_specularCoeff);
+          m_shininess = oth.m_shininess;
+     }
+
+     Material& operator=(const Material& oth)
+     {
+          return *this;
+     }
+
+     Material& operator=(Material&& oth)
+     {
+          return *this;
+     }
+
+     ~Material()
+     {
+
+     }
+
+     void bindTexture(QOpenGLShaderProgram &program) {
+          if(m_colorTexture.get() != nullptr) {
+               m_colorTexture->bind(3);
+               program.setUniformValue("colorTexture", 3);
+          }
+
+          if(m_BumpTexture.get() != nullptr) {
+               // m_displacmentTexture->bind(3);
+               // program.setUniformValue("textures", 3);
+          }
+
+          QVector3D ambient_texture_QT (m_ambientCoeff.x(), m_ambientCoeff.y(), m_ambientCoeff.z());
+          program.setUniformValue("ambient_coeffs", ambient_texture_QT);
+
+          QVector3D diffuse_texture_QT(m_diffuseCoeff.x(), m_diffuseCoeff.y(), m_diffuseCoeff.z());
+          program.setUniformValue("diffuse_coeffs", diffuse_texture_QT);
+
+          QVector3D specular_texture_QT(m_specularCoeff.x(), m_specularCoeff.y(), m_specularCoeff.z());
+          program.setUniformValue("specular_coeffs", specular_texture_QT);
+
+          float shininess = this->m_shininess;
+          program.setUniformValue("shininess", m_shininess);
+     }
+
+     void releaseTexture() {
+
+          if(m_colorTexture.get() != nullptr)
+               m_colorTexture->release(3);
+
+          if(m_BumpTexture.get() != nullptr)
+               m_BumpTexture->release(3);
+     }
+
+     private:
+     QOpenGLContext *m_ctx;
+     std::string m_name;
+
+     std::shared_ptr<QOpenGLTexture> m_colorTexture = nullptr;
+     QImage m_raw_ColorTexture;
+
+     std::shared_ptr<QOpenGLTexture> m_BumpTexture = nullptr;
+     QImage m_raw_BumpTexture;
+
+     Eigen::Vector3f m_ambientCoeff = Eigen::Vector3f(0.1, 0.1, 0.1);
+     Eigen::Vector3f m_diffuseCoeff = Eigen::Vector3f(0.45, 0.45, 0.45);
+     Eigen::Vector3f m_specularCoeff = Eigen::Vector3f(0.45, 0.45, 0.45);
+     float m_shininess = 8;
 };
 
 class Mesh : public QOpenGLFunctions
 {
      public:
-     Mesh(QOpenGLContext* ctx_) : QOpenGLFunctions(ctx_), ctx(ctx_),
-     indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
-     arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+     struct VertexData
      {
-          arrayBuf->create();
-          indexBuf->create();
+          Eigen::Vector3f position;
+          Eigen::Vector2f colorTextCoord;
+          Eigen::Vector3f normal;
+     };
 
-          indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
-          arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+     Mesh(QOpenGLContext* ctx_) : QOpenGLFunctions(ctx_), m_ctx(ctx_),
+     m_indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
+     m_arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+     {
+          m_arrayBuf->create();
+          m_indexBuf->create();
+
+          m_indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          m_arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
      }
 
-     Mesh(Mesh&& oth): QOpenGLFunctions(oth.ctx)
+     Mesh(Mesh&& oth): QOpenGLFunctions(oth.m_ctx)
      {
-          vertices    = std::move(oth.vertices);
-          indices     = std::move(oth.indices);
-          raw_texture = std::move(oth.raw_texture);
+          m_vertices    = std::move(oth.m_vertices);
+          m_indices     = std::move(oth.m_indices);
 
-          arrayBuf = std::move(oth.arrayBuf);
-          indexBuf = std::move(oth.indexBuf);
-          texture =  std::move(oth.texture);
+          m_arrayBuf = std::move(oth.m_arrayBuf);
+          m_indexBuf = std::move(oth.m_indexBuf);
 
-          ambient_texture  = std::move(oth.ambient_texture );
-          diffuse_texture  = std::move(oth.diffuse_texture );
-          specular_texture = std::move(oth.specular_texture);
-          shininess = oth.shininess;
+          m_mat = std::move(oth.m_mat);
 
-          ctx = oth.ctx;
-          oth.ctx = nullptr;
+          m_ctx = oth.m_ctx;
+          oth.m_ctx = nullptr;
      }
 
      Mesh& operator=(Mesh&& oth)
      {
-          if(arrayBuf.get() != nullptr)
-          {
-               arrayBuf->destroy();
-          }
-          if(indexBuf.get() != nullptr)
-          {
-               indexBuf->destroy();
-          }
-          if(texture.get() != nullptr)
-          {
-               texture->destroy();
-          }
+          m_vertices    = std::move(oth.m_vertices);
+          m_indices     = std::move(oth.m_indices);
 
-          vertices    = std::move(oth.vertices);
-          indices     = std::move(oth.indices);
-          raw_texture = std::move(oth.raw_texture);
+          m_arrayBuf = std::move(oth.m_arrayBuf);
+          m_indexBuf = std::move(oth.m_indexBuf);
 
-          arrayBuf = std::move(oth.arrayBuf);
-          indexBuf = std::move(oth.indexBuf);
-          texture =  std::move(oth.texture);
+          m_mat = std::move(oth.m_mat);
 
-          ambient_texture  = std::move(oth.ambient_texture );
-          diffuse_texture  = std::move(oth.diffuse_texture );
-          specular_texture = std::move(oth.specular_texture);
-          shininess = oth.shininess;
-
-          ctx = oth.ctx;
-          oth.ctx = nullptr;
+          m_ctx = oth.m_ctx;
+          oth.m_ctx = nullptr;
 
           return *this;
      }
 
-     Mesh(const Mesh& oth): QOpenGLFunctions(oth.ctx),
-     indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
-     arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
+     Mesh(const Mesh& oth): QOpenGLFunctions(oth.m_ctx),
+     m_indexBuf( new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer )),
+     m_arrayBuf( new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer))
      {
-          vertices = oth.vertices;
-          indices  = oth.indices;
-          raw_texture = oth.raw_texture;
-          ambient_texture  = oth.ambient_texture ;
-          diffuse_texture  = oth.diffuse_texture ;
-          specular_texture = oth.specular_texture;
+          m_vertices = oth.m_vertices;
+          m_indices  = oth.m_indices;
+          m_mat = oth.m_mat;
 
-          arrayBuf->create();
-          indexBuf->create();
+          m_arrayBuf->create();
+          m_indexBuf->create();
 
-          indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
-          arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          m_indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          m_arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-          arrayBuf->bind();
-          arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
+          m_arrayBuf->bind();
+          m_arrayBuf->allocate(m_vertices.data(), m_vertices.size() * sizeof(m_vertices[0]));
 
-          indexBuf->bind();
-          indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
+          m_indexBuf->bind();
+          m_indexBuf->allocate(m_indices.data(), m_indices.size() * sizeof(m_indices[0]));
 
-          texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(raw_texture.mirrored()));
-
-          ctx = oth.ctx;
+          m_ctx = oth.m_ctx;
      }
 
      Mesh& operator=(const Mesh& oth)
      {
-          if(arrayBuf.get() != nullptr)
-          {
-               arrayBuf->destroy();
-          }
-          if(indexBuf.get() != nullptr)
-          {
-               indexBuf->destroy();
-          }
-          if(texture.get() != nullptr)
-          {
-               texture->destroy();
-          }
+          m_vertices = oth.m_vertices;
+          m_indices  = oth.m_indices;
+          m_mat = oth.m_mat;
 
-          vertices = oth.vertices;
-          indices  = oth.indices;
-          raw_texture = oth.raw_texture;
+          m_arrayBuf->create();
+          m_indexBuf->create();
 
-          ambient_texture  = oth.ambient_texture ;
-          diffuse_texture  = oth.diffuse_texture ;
-          specular_texture = oth.specular_texture;
+          m_indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          m_arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-          arrayBuf->create();
-          indexBuf->create();
+          m_arrayBuf->bind();
+          m_arrayBuf->allocate(m_vertices.data(), m_vertices.size() * sizeof(m_vertices[0]));
 
-          indexBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
-          arrayBuf->setUsagePattern(QOpenGLBuffer::StaticDraw);
+          m_indexBuf->bind();
+          m_indexBuf->allocate(m_indices.data(), m_indices.size() * sizeof(m_indices[0]));
 
-          arrayBuf->bind();
-          arrayBuf->allocate(vertices.data(), vertices.size() * sizeof(vertices[0]));
-
-          indexBuf->bind();
-          indexBuf->allocate(indices.data(), indices.size() * sizeof(indices[0]));
-
-          texture = std::shared_ptr<QOpenGLTexture> (new QOpenGLTexture(raw_texture.mirrored()));
-
-          ctx = oth.ctx;
+          m_ctx = oth.m_ctx;
 
           return *this;
      }
 
      ~Mesh()
      {
-          if(arrayBuf.get() != nullptr)
-          {
-               arrayBuf->destroy();
-          }
-          if(indexBuf.get() != nullptr)
-          {
-               indexBuf->destroy();
-          }
-          if(texture.get() != nullptr)
-          {
-               texture->destroy();
-          }
      }
+
      void draw(QOpenGLShaderProgram &program);
 
-     std::vector<VertexData> vertices;
-     std::vector<uint32_t> indices;
+     std::vector<VertexData> m_vertices;
+     std::vector<uint32_t> m_indices;
 
-     QImage raw_texture;
+     std::shared_ptr<QOpenGLBuffer> m_arrayBuf;
+     std::shared_ptr<QOpenGLBuffer> m_indexBuf;
 
-     std::shared_ptr<QOpenGLBuffer> arrayBuf;
-     std::shared_ptr<QOpenGLBuffer> indexBuf;
-
-     std::shared_ptr<QOpenGLTexture> texture = nullptr;
-
-     Eigen::Vector3f ambient_texture = Eigen::Vector3f(0.1, 0.1, 0.1);
-     Eigen::Vector3f diffuse_texture = Eigen::Vector3f(0.45, 0.45, 0.45);
-     Eigen::Vector3f specular_texture = Eigen::Vector3f(0.45, 0.45, 0.45);
-     float shininess = 8;
+     std::shared_ptr<Material> m_mat;
 
      private:
-     QOpenGLContext *ctx;
+     QOpenGLContext *m_ctx;
 };
 
 /*
@@ -219,8 +284,8 @@ class Body
 public:
 
      enum class RenderType: uint8_t {
-          SHADOW_RENDER,
-          NORMAL_RENDER,
+          SHADOW,
+          NORMAL,
      };
 
      struct BodyKinematicParametrs {
@@ -242,7 +307,7 @@ public:
      Body(const Body&);
      Body& operator=(const Body&);
      ~Body();
-     void draw(QOpenGLShaderProgram& program, RenderType type = RenderType::NORMAL_RENDER);
+     void draw(QOpenGLShaderProgram& program, RenderType type = RenderType::NORMAL);
      void update();
 
      void setBodyPosition(Eigen::Vector3d&);
@@ -288,10 +353,10 @@ private:
 
      BodyKinematicParametrs m_KinematicParametrs;
 
-     mutable std::mutex mtx;
+     mutable std::mutex m_mtx;
      bool m_castsShadows = true;
 
-     std::vector<Mesh> meshes;
+     std::vector<Mesh> m_meshes;
 };
 
 #endif // BODY_H

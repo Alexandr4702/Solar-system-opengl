@@ -85,7 +85,7 @@ void GlSimulation::paintGL()
 
     for(auto& body: _world->_bodies)
     {
-        body.draw(_shadowMapTechPtr->_shaderProgramTechMap, Body::RenderType::SHADOW_RENDER);
+        body.draw(_shadowMapTechPtr->_shaderProgramTechMap, Body::RenderType::SHADOW);
     }
     // return;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
