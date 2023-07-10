@@ -1,7 +1,7 @@
 #include "camera.h"
 
-Camera::Camera() {
-
+Camera::Camera()
+{
 }
 
 void Camera::setProjetionMatrix(Eigen::Matrix4d mat)
@@ -45,59 +45,59 @@ Eigen::Vector3d Camera::getScale() const
     return ret;
 }
 
-void Camera::TranslateCam(Eigen::Vector3d& transl)
+void Camera::TranslateCam(Eigen::Vector3d &transl)
 {
     std::scoped_lock guard(mtx);
     translation += rotation.inverse() * transl;
 }
 
-void Camera::TranslateCam(Eigen::Vector3d&& transl)
+void Camera::TranslateCam(Eigen::Vector3d &&transl)
 {
     std::scoped_lock guard(mtx);
     translation += rotation.inverse() * transl;
 }
 
-void Camera::setTranslationCam(Eigen::Vector3d& transl)
+void Camera::setTranslationCam(Eigen::Vector3d &transl)
 {
     std::scoped_lock guard(mtx);
     translation = -transl;
 }
 
-void Camera::setTranslationCam(Eigen::Vector3d&& transl)
+void Camera::setTranslationCam(Eigen::Vector3d &&transl)
 {
     std::scoped_lock guard(mtx);
     translation = -transl;
 }
 
-void Camera::rotateCam(Eigen::Quaterniond& rot)
+void Camera::rotateCam(Eigen::Quaterniond &rot)
 {
     std::scoped_lock guard(mtx);
     rotation = rot * rotation;
 }
 
-void Camera::rotateCam(Eigen::Quaterniond&& rot)
+void Camera::rotateCam(Eigen::Quaterniond &&rot)
 {
     std::scoped_lock guard(mtx);
     rotation = rot * rotation;
 }
 
-void Camera::setCamRotation(Eigen::Quaterniond& rot)
+void Camera::setCamRotation(Eigen::Quaterniond &rot)
 {
-    if(rot.coeffs().hasNaN())
+    if (rot.coeffs().hasNaN())
         return;
     std::scoped_lock guard(mtx);
     rotation = rot;
 }
 
-void Camera::setCamRotation(Eigen::Quaterniond&& rot)
+void Camera::setCamRotation(Eigen::Quaterniond &&rot)
 {
-    if(rot.coeffs().hasNaN())
+    if (rot.coeffs().hasNaN())
         return;
     std::scoped_lock guard(mtx);
     rotation = rot;
 }
 
-void Camera::ScaleCam(Eigen::Vector3d& scal)
+void Camera::ScaleCam(Eigen::Vector3d &scal)
 {
     std::scoped_lock guard(mtx);
     scale += scal;
@@ -116,10 +116,10 @@ Eigen::Matrix4d Camera::getCameraMatrix() const
 
 Eigen::Matrix4f Camera::getCameraProjectiveMatrix() const
 {
-    return (projectiveMatrix * getCameraMatrix()).cast <float>();
+    return (projectiveMatrix * getCameraMatrix()).cast<float>();
 }
 
-void Camera::printCameraParam(std::ostream& out) const
+void Camera::printCameraParam(std::ostream &out) const
 {
     out << translation.transpose() << "\r\n";
     out << rotation << "\r\n";
@@ -134,38 +134,38 @@ Eigen::Matrix4d Camera::projective_matrix(float fovY, float aspectRatio, float z
     // float xScale = 1;
 
     Eigen::Matrix4d pmat;
-    pmat << xScale,      0,                           0,                          0,
-            0     , yScale,                           0,                          0,
-            0     ,      0,  -(zFar+zNear)/(zFar-zNear), -2*zNear*zFar/(zFar-zNear),
-            0     ,      0,                          -1,                          0;
+    pmat << xScale, 0, 0, 0,
+        0, yScale, 0, 0,
+        0, 0, -(zFar + zNear) / (zFar - zNear), -2 * zNear * zFar / (zFar - zNear),
+        0, 0, -1, 0;
     return pmat;
 }
 
-Eigen::Matrix4d Camera::projective_matrix(const Camera::CamParametrs& param)
+Eigen::Matrix4d Camera::projective_matrix(const Camera::CamParametrs &param)
 {
     Eigen::Matrix4d pmat = projective_matrix(param.fov, param.aspect_ratio, param.near_plane, param.far_plane);
     return pmat;
 }
 
-void Camera::StartRotation(Eigen::Vector2d& mouseCoord)
+void Camera::StartRotation(Eigen::Vector2d &mouseCoord)
 {
     std::scoped_lock guard(mtx);
     mouseCoord0 = mouseCoord;
     q0 = rotation;
 }
 
-void Camera::rotateCam(Eigen::Vector2d& mouseCoord)
+void Camera::rotateCam(Eigen::Vector2d &mouseCoord)
 {
     std::scoped_lock guard(mtx);
     Eigen::Vector2d diff = mouseCoord - mouseCoord0;
 
     diff *= 0.001;
 
-    float w_rot = sqrt(1- diff.x()*diff.x() - diff.y()*diff.y());
-    Eigen::Quaterniond q (w_rot, diff.y(), diff.x(), 0);
+    float w_rot = sqrt(1 - diff.x() * diff.x() - diff.y() * diff.y());
+    Eigen::Quaterniond q(w_rot, diff.y(), diff.x(), 0);
     q = q * q0;
 
-    if(q.coeffs().hasNaN())
+    if (q.coeffs().hasNaN())
         return;
     rotation = q;
 }

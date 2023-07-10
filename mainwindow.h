@@ -5,14 +5,15 @@
 #include "glsimulation.h"
 #include <memory>
 
-class Mainwindow:public QWidget
+class Mainwindow : public QWidget
 {
 public:
     Mainwindow();
     float _simulationScreenRatio = 0.7;
-    std::shared_ptr <GlSimulation> _simulation;
+    std::shared_ptr<GlSimulation> _simulation;
+
 protected:
-   void resizeEvent(QResizeEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // MAINWINDOW_H

@@ -22,11 +22,12 @@
 class Camera
 {
 public:
-    struct CamParametrs {
-        float near_plane   = .1f;
-        float far_plane    = 1000.0f;
+    struct CamParametrs
+    {
+        float near_plane = .1f;
+        float far_plane = 1000.0f;
         float aspect_ratio = 1;
-        float fov          = 60.f;
+        float fov = 60.f;
     };
 
     Camera();
@@ -45,21 +46,21 @@ public:
     void rotateCam(Eigen::Quaterniond &&rot);
     void rotateCam(Eigen::Vector2d &mouseCoord);
     void setCamRotation(Eigen::Quaterniond &rot);
-    void setCamRotation(Eigen::Quaterniond&&rot);
+    void setCamRotation(Eigen::Quaterniond &&rot);
     void ScaleCam(Eigen::Vector3d &scal);
     Eigen::Matrix4d getCameraMatrix() const;
     Eigen::Matrix4f getCameraProjectiveMatrix() const;
     void printCameraParam(std::ostream &out) const;
     void StartRotation(Eigen::Vector2d &mouseCoord);
-    const CamParametrs& getCamParametrs()const {
+    const CamParametrs &getCamParametrs() const
+    {
         return m_cam_params;
     }
 
-    static Eigen::Matrix4d projective_matrix(const CamParametrs& param);
+    static Eigen::Matrix4d projective_matrix(const CamParametrs &param);
     static Eigen::Matrix4d projective_matrix(float fovY, float aspectRatio, float zNear, float zFar);
 
 private:
-
     CamParametrs m_cam_params;
 
     Eigen::Vector3d translation{0, 0, 0};
@@ -69,7 +70,6 @@ private:
 
     Eigen::Quaterniond q0;
     Eigen::Vector2d mouseCoord0;
-
 
     mutable std::mutex mtx;
 };

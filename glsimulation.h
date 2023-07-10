@@ -42,6 +42,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+
 private:
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string fragmentShader);
     bool createShaderProgramFromFiles(QOpenGLShaderProgram &shaderProgramm_, std::string vertesShader, std::string geometryShader, std::string fragmentShader);
@@ -58,10 +59,9 @@ private:
     std::thread _paintThreadHandle;
     std::atomic<bool> _isPaintThreadRun = true;
 
-    //Just bool because i don't see any bad consequnes.
+    // Just bool because i don't see any bad consequnes.
     std::unordered_map<int, bool> _PressedKey;
     std::mutex _pressedKeyMutex;
-
 };
 
 #endif // GLSIMULATION_H

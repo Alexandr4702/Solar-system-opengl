@@ -23,7 +23,8 @@ public:
     void StartSimulations();
     std::vector<Body> _bodies;
     void calculatingThread();
-    private:
+
+private:
     void calcForcesAccelrations();
     std::thread _calculatingThread;
     std::atomic<bool> _isPaintThreadRun = true;
@@ -32,8 +33,8 @@ public:
 };
 
 template <typename T, typename U>
-T&& rungeKutta4(T& vec, U dt) {
-
+T &&rungeKutta4(T &vec, U dt)
+{
 }
 
 #endif // WORLD_H

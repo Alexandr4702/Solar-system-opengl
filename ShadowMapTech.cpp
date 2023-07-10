@@ -1,6 +1,6 @@
 #include "ShadowMapTech.h"
 
-ShadowMapFBO::ShadowMapFBO(QOpenGLContext* ctx_): QOpenGLFunctions(ctx_)
+ShadowMapFBO::ShadowMapFBO(QOpenGLContext *ctx_) : QOpenGLFunctions(ctx_)
 {
     m_fbo = 0;
     m_shadowMap = 0;
@@ -8,11 +8,13 @@ ShadowMapFBO::ShadowMapFBO(QOpenGLContext* ctx_): QOpenGLFunctions(ctx_)
 
 ShadowMapFBO::~ShadowMapFBO()
 {
-    if (m_fbo != 0) {
+    if (m_fbo != 0)
+    {
         glDeleteFramebuffers(1, &m_fbo);
     }
 
-    if (m_shadowMap != 0) {
+    if (m_shadowMap != 0)
+    {
         glDeleteTextures(1, &m_shadowMap);
     }
 }
@@ -37,7 +39,7 @@ bool ShadowMapFBO::Init(unsigned int Width, unsigned int Height, bool ForPCF)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -49,7 +51,8 @@ bool ShadowMapFBO::Init(unsigned int Width, unsigned int Height, bool ForPCF)
 
     GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-    if (Status != GL_FRAMEBUFFER_COMPLETE) {
+    if (Status != GL_FRAMEBUFFER_COMPLETE)
+    {
         printf("FB error, status: 0x%x\n", Status);
         return false;
     }
@@ -59,13 +62,11 @@ bool ShadowMapFBO::Init(unsigned int Width, unsigned int Height, bool ForPCF)
     return true;
 }
 
-
 void ShadowMapFBO::BindForWriting()
 {
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
-    glViewport(0, 0, m_width, m_height);  // set the width/height of the shadow map!
+    glViewport(0, 0, m_width, m_height); // set the width/height of the shadow map!
 }
-
 
 void ShadowMapFBO::BindForReading(GLenum TextureUnit)
 {
@@ -73,12 +74,14 @@ void ShadowMapFBO::BindForReading(GLenum TextureUnit)
     glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 }
 
-void ShadowMapFBO::resize(int WindowWidth, int WindowHeight) {
+void ShadowMapFBO::resize(int WindowWidth, int WindowHeight)
+{
     m_width = WindowWidth;
     m_height = WindowHeight;
     bool ForPCF = false;
 
-    if (m_shadowMap != 0) {
+    if (m_shadowMap != 0)
+    {
         glDeleteTextures(1, &m_shadowMap);
     }
 
@@ -93,7 +96,7 @@ void ShadowMapFBO::resize(int WindowWidth, int WindowHeight) {
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -105,29 +108,29 @@ void ShadowMapFBO::resize(int WindowWidth, int WindowHeight) {
 
     GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-    if (Status != GL_FRAMEBUFFER_COMPLETE) {
+    if (Status != GL_FRAMEBUFFER_COMPLETE)
+    {
         printf("FB error, status: 0x%x\n", Status);
         // return false;
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-CascadedShadowMapFBO::CascadedShadowMapFBO(QOpenGLContext* ctx_): QOpenGLExtraFunctions(ctx_)
+CascadedShadowMapFBO::CascadedShadowMapFBO(QOpenGLContext *ctx_) : QOpenGLExtraFunctions(ctx_)
 {
-
 }
 
 CascadedShadowMapFBO::~CascadedShadowMapFBO()
 {
-    if (m_depthMapFBO != 0) {
+    if (m_depthMapFBO != 0)
+    {
         glDeleteFramebuffers(1, &m_depthMapFBO);
     }
 
-    if (m_depthCubemap != 0) {
+    if (m_depthCubemap != 0)
+    {
         glDeleteTextures(1, &m_depthCubemap);
     }
 }
@@ -155,7 +158,8 @@ bool CascadedShadowMapFBO::Init(unsigned int WindowWidth, unsigned int WindowHei
 
     GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-    if (Status != GL_FRAMEBUFFER_COMPLETE) {
+    if (Status != GL_FRAMEBUFFER_COMPLETE)
+    {
         printf("FB error, status: 0x%x\n", Status);
         // return false;
     }

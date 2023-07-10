@@ -21,10 +21,12 @@ void World::calculatingThread()
     using namespace std;
     using namespace Eigen;
 
-    while(_isPaintThreadRun.load(std::memory_order_relaxed)) {
+    while (_isPaintThreadRun.load(std::memory_order_relaxed))
+    {
         calcForcesAccelrations();
 
-        for(Body& body: _bodies) {
+        for (Body &body : _bodies)
+        {
             Body::BodyKinematicParametrs param(body.getBodyKinematicParametrs());
 
             param.velocity += param.acceleration * dt;
@@ -51,11 +53,13 @@ void World::calcForcesAccelrations()
 {
     using namespace Eigen;
     // std::cout << "New iter \n";
-    for(uint32_t i = 0; i < _bodies.size(); i++) {
+    for (uint32_t i = 0; i < _bodies.size(); i++)
+    {
 
         Body::BodyKinematicParametrs param_i(_bodies[i].getBodyKinematicParametrs());
 
-        for(uint32_t j = i + 1; j < _bodies.size(); j++) {
+        for (uint32_t j = i + 1; j < _bodies.size(); j++)
+        {
             Body::BodyKinematicParametrs param_j(_bodies[j].getBodyKinematicParametrs());
 
             Vector3d r_i_j = param_i.postition - param_j.postition;
@@ -64,7 +68,7 @@ void World::calcForcesAccelrations()
             double force_module = G * _bodies[i].getMass() * _bodies[j].getMass() / r_square;
 
             param_i.force += -r_i_j_normalised * force_module;
-            param_j.force +=  r_i_j_normalised * force_module;
+            param_j.force += r_i_j_normalised * force_module;
             _bodies[j].setBodyKinematicParametrs(std::move(param_j));
 
             // std::cout << _bodies[j].getName() << " " << param_j.postition.transpose() << " j\n";
@@ -77,6 +81,3 @@ void World::calcForcesAccelrations()
         _bodies[i].setBodyKinematicParametrs(std::move(param_i));
     }
 }
-
-
-
