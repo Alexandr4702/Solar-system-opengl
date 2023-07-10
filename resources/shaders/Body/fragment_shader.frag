@@ -18,16 +18,18 @@ in struct data_to_pass
     vec4 positionCam;
 } to_fs;
 
-uniform sampler2D textures;
+uniform sampler2D colorTexture;
+uniform sampler2D displacmentTexture;
+
 out vec4 fragColor;
 uniform vec3 camPosition;
 
 uniform float near_plane;
 uniform float far_plane;
 
-uniform vec3 ambient_texture;
-uniform vec3 diffuse_texture;
-uniform vec3 specular_texture;
+uniform vec3  ambient_coeffs;
+uniform vec3  diffuse_coeffs;
+uniform vec3 specular_coeffs;
 uniform float shininess;
 vec3 LightPosition = {0, 0, 0};
 
@@ -134,11 +136,11 @@ vec4 calcLight(vec3 Normal, vec3 lightPos, vec3 FragPos, vec3 lightColor, vec3 v
 void main()
 {
     vec3 lightColor = {1, 1, 1};
-    vec4 temp = texture(textures, to_fs.v_texcoord);
+    vec4 temp = texture(colorTexture, to_fs.v_texcoord);
     texture_Pr texture_properties;
-    texture_properties.ambient = temp.xyz * ambient_texture;
-    texture_properties.diffuse = temp.xyz * diffuse_texture * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
-    texture_properties.specular = temp.xyz * specular_texture * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
+    texture_properties.ambient = temp.xyz * ambient_coeffs;
+    texture_properties.diffuse = temp.xyz * diffuse_coeffs * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
+    texture_properties.specular = temp.xyz * specular_coeffs * PointsShadowCalculation(PointShadowMap, to_fs.positionWorld.xyz);
     texture_properties.shininess = shininess;
 
     fragColor = calcLight(to_fs.normal, LightPosition, to_fs.positionWorld.xyz, lightColor, camPosition, texture_properties);
