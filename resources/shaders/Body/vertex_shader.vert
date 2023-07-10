@@ -25,9 +25,15 @@ out struct data_to_pass
     vec4 positionCam;
 } to_fs;
 
+uniform sampler2D bumpTexture;
+
 void main()
 {
-    vec4 worldPos = world_matrix * vec4(position, 1.0);
+    vec4 v_bump = texture(bumpTexture, texture_coordinate);
+
+    vec4 pos = vec4(position, 1.0) + vec4(normal * v_bump.x, 0) / 8;
+
+    vec4 worldPos = world_matrix * pos;
     vec4 posCam   = view_matrix * worldPos;
     gl_Position = projective_matrix * posCam;
 

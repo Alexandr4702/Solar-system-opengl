@@ -80,8 +80,14 @@ public:
                std::string path_to_texture(texture_path.data);
                path_to_texture = pathToTextureFolder + "/" + path_to_texture;
                m_raw_BumpTexture = QImage(path_to_texture.c_str());
-
-               m_colorTexture = std::shared_ptr<QOpenGLTexture>(new QOpenGLTexture(m_raw_ColorTexture.mirrored()));
+               if (m_raw_BumpTexture.isNull())
+               {
+                    std::cout << "Cannot open texture\n";
+               }
+               else
+               {
+                    m_BumpTexture = std::shared_ptr<QOpenGLTexture>(new QOpenGLTexture(m_raw_BumpTexture.mirrored()));
+               }
           }
      }
 
@@ -130,8 +136,8 @@ public:
 
           if (m_BumpTexture.get() != nullptr)
           {
-               // m_displacmentTexture->bind(3);
-               // program.setUniformValue("textures", 3);
+               m_BumpTexture->bind(4);
+               program.setUniformValue("bumpTexture", 4);
           }
 
           QVector3D ambient_texture_QT(m_ambientCoeff.x(), m_ambientCoeff.y(), m_ambientCoeff.z());
@@ -154,7 +160,7 @@ public:
                m_colorTexture->release(3);
 
           if (m_BumpTexture.get() != nullptr)
-               m_BumpTexture->release(3);
+               m_BumpTexture->release(4);
      }
 
 private:

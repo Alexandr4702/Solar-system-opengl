@@ -19,7 +19,6 @@ in struct data_to_pass
 } to_fs;
 
 uniform sampler2D colorTexture;
-uniform sampler2D displacmentTexture;
 
 out vec4 fragColor;
 uniform vec3 camPosition;
