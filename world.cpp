@@ -31,6 +31,7 @@ void World::calculatingThread()
 
             param.velocity += param.acceleration * dt;
             param.postition += param.velocity * dt;
+            // sahsa test
 
             param.angularVelocity += param.angularAcceleration * dt;
 
